@@ -1,4 +1,4 @@
-package com.example.rumahaman.presentation.login
+package com.example.rumahaman.presentation.register
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -14,7 +14,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -22,20 +25,25 @@ import com.example.rumahaman.R
 import com.example.rumahaman.presentation.ui.Button
 import com.example.rumahaman.presentation.ui.TextFieldAuth
 import com.example.rumahaman.presentation.ui.theme.*
+import kotlin.Boolean
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class) // Diperlukan untuk beberapa parameter TextFieldDefaults
 @Composable
-fun LoginScreen(modifier: Modifier = Modifier) {
+fun RegisterScreen(modifier: Modifier = Modifier) {
     // State untuk menyimpan input pengguna
-    var email by remember { mutableStateOf("margarethap@gmail.com") }
-    var password by remember { mutableStateOf("**********") }
-    var rememberMe by remember { mutableStateOf(true) }
+    var name by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    var isChecked by remember { mutableStateOf(true) }
 
     // --- Logika Validasi Sederhana ---
     // Anda bisa memindahkan logika ini ke ViewModel nanti
-    val isEmailValid = email.contains("@") && email.length > 5
+    val isNameValid = name.length > 3
+    val isEmailValid = email.contains("@") // Validasi email yang sangat dasar
     val isPasswordValid = password.length >= 8
+    val doPasswordsMatch = password == confirmPassword && password.isNotEmpty()
 
     Surface(modifier = modifier.fillMaxSize()) {
         Column(
@@ -58,7 +66,7 @@ fun LoginScreen(modifier: Modifier = Modifier) {
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(
-                    text = "Masuk",
+                    text = "Daftar",
                     style = MaterialTheme.typography.headlineSmall, // Gunakan style dari tema M3
                     fontWeight = FontWeight.Bold
                 )
@@ -68,7 +76,7 @@ fun LoginScreen(modifier: Modifier = Modifier) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 32.dp, top = 32.dp),
+                    .padding(bottom = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Image(
@@ -90,13 +98,20 @@ fun LoginScreen(modifier: Modifier = Modifier) {
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                // Nama
+                TextFieldAuth(
+                    value = name,
+                    onValueChange = { name = it },
+                    placeholder = "Nama",
+                    isValid = isNameValid
+                )
+
                 // Email
                 TextFieldAuth(
                     value = email,
                     onValueChange = { email = it },
                     placeholder = "Email",
-                    isValid = null, // Tidak perlu validasi ikon di login
-                    isPassword = false
+                    isValid = isEmailValid
                 )
 
                 // Password
@@ -104,50 +119,83 @@ fun LoginScreen(modifier: Modifier = Modifier) {
                     value = password,
                     onValueChange = { password = it },
                     placeholder = "Kata Sandi",
-                    isValid = null, // Tidak perlu validasi ikon di login
+                    isValid = isPasswordValid,
                     isPassword = true,
                     showPasswordToggle = true
                 )
-            }
 
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-                horizontalAlignment = Alignment.End
-            ) {
-                ClickableText(
-                    text = AnnotatedString("Lupa Password?"),
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = LinkColor,
-                        fontWeight = FontWeight.SemiBold
-                    ),
-                    onClick = { /* TODO: Navigasi ke halaman Lupa Password */ }
+                // Konfirmasi Password
+                TextFieldAuth(
+                    value = confirmPassword,
+                    onValueChange = { confirmPassword = it },
+                    placeholder = "Ulangi Kata Sandi",
+                    isValid = doPasswordsMatch,
+                    isPassword = true
                 )
             }
 
+            // Bagian Checkbox Persetujuan
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(
+                    checked = isChecked,
+                    onCheckedChange = { isChecked = it },
+                    colors = CheckboxDefaults.colors(checkedColor = TealColor)
+                )
+                // Teks dengan bagian yang bisa diklik
+                val annotatedText = buildAnnotatedString {
+                    append("Saya setuju untuk ")
+                    pushStringAnnotation(tag = "TOS", annotation = "terms_of_service_url")
+                    withStyle(style = SpanStyle(color = LinkColor, fontWeight = FontWeight.SemiBold)) {
+                        append("Ketentuan Layanan")
+                    }
+                    pop()
+                    append(" dan ")
+                    pushStringAnnotation(tag = "PRIVACY", annotation = "privacy_policy_url")
+                    withStyle(style = SpanStyle(color = LinkColor, fontWeight = FontWeight.SemiBold)) {
+                        append("Kebijakan Privasi")
+                    }
+                    pop()
+                }
+                ClickableText(
+                    text = annotatedText,
+                    style = MaterialTheme.typography.bodyMedium,
+                    onClick = { offset ->
+                        annotatedText.getStringAnnotations(tag = "TOS", start = offset, end = offset).firstOrNull()?.let {
+                            // TODO: Aksi buka link Ketentuan Layanan
+                        }
+                        annotatedText.getStringAnnotations(tag = "PRIVACY", start = offset, end = offset).firstOrNull()?.let {
+                            // TODO: Aksi buka link Kebijakan Privasi
+                        }
+                    }
+                )
+            }
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Tombol Masuk (Sekarang menggunakan AuthButton)
+            // Tombol Daftar (Sekarang menggunakan AuthButton)
             Button(
-                text = "Masuk",
-                onClick = { /* TODO: Aksi untuk masuk */ }
+                text = "Daftar",
+                onClick = { /* TODO: Aksi untuk mendaftar */ }
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Teks "Daftarkan dirimu"
+            // Teks "Masuk di sini"
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = "Belum punya akun? ", style = MaterialTheme.typography.bodyMedium)
+                Text(text = "Sudah punya akun? ", style = MaterialTheme.typography.bodyMedium)
                 ClickableText(
-                    text = AnnotatedString("Daftarkan dirimu"),
+                    text = AnnotatedString("Masuk di sini"),
                     style = MaterialTheme.typography.bodyMedium.copy(color = LinkColor, fontWeight = FontWeight.Bold),
-                    onClick = { /* TODO: Navigasi ke halaman Register */ }
+                    onClick = { /* TODO: Navigasi ke halaman Login */ }
                 )
             }
         }
@@ -156,8 +204,8 @@ fun LoginScreen(modifier: Modifier = Modifier) {
 
 @Preview(showBackground = true)
 @Composable
-fun LoginScreenPreview() {
+fun RegisterScreenPreview() {
     RumahAmanTheme {
-        LoginScreen()
+        RegisterScreen()
     }
 }
