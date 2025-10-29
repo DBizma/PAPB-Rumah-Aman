@@ -28,7 +28,7 @@ import com.example.rumahaman.presentation.ui.theme.*
 @Composable
 fun LoginScreen(modifier: Modifier = Modifier) {
     // State untuk menyimpan input pengguna
-    var email by remember { mutableStateOf("margarethap@gmail.com") }
+    var email by remember { mutableStateOf("Email") }
     var password by remember { mutableStateOf("**********") }
     var rememberMe by remember { mutableStateOf(true) }
 

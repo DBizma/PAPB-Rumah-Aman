@@ -3,7 +3,6 @@ package com.example.rumahaman.presentation.ui
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -14,6 +13,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.rumahaman.presentation.ui.theme.RumahAmanTheme
 import com.example.rumahaman.presentation.ui.theme.TealColor
+// Impor nama 'Button' dari material3 dengan alias agar tidak konflik
+import androidx.compose.material3.Button as MaterialButton
 
 /**
  * Komponen Button utama yang dapat digunakan kembali di seluruh aplikasi.
@@ -21,23 +22,27 @@ import com.example.rumahaman.presentation.ui.theme.TealColor
  * @param text Teks yang akan ditampilkan di dalam tombol.
  * @param onClick Lambda yang akan dieksekusi saat tombol diklik.
  * @param modifier Modifier untuk kustomisasi Composable ini.
+ * @param enabled Mengontrol status aktif/nonaktif tombol.
  */
 @Composable
-fun Button( // 1. Mengubah nama agar tidak bentrok dengan Button bawaan
-    text: String, // 2. Menambahkan parameter untuk teks
-    onClick: () -> Unit, // 3. Menambahkan parameter untuk aksi klik
-    modifier: Modifier = Modifier
+fun Button( // 1. NAMA FUNGSI DIKEMBALIKAN menjadi Button
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true // Parameter 'enabled' tetap ada
 ) {
-    Button(
-        onClick = onClick, // Menggunakan parameter onClick
-        modifier = modifier // Menggunakan modifier dari parameter
+    // Menggunakan MaterialButton (Button dari Material3 yang sudah diberi alias)
+    MaterialButton(
+        onClick = onClick,
+        modifier = modifier
             .fillMaxWidth()
             .height(56.dp),
         shape = RoundedCornerShape(12.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = TealColor)
+        colors = ButtonDefaults.buttonColors(containerColor = TealColor),
+        enabled = enabled // Menggunakan parameter 'enabled'
     ) {
         Text(
-            text = text, // Menggunakan parameter text
+            text = text,
             style = MaterialTheme.typography.titleLarge,
             color = Color.White
         )
@@ -45,13 +50,25 @@ fun Button( // 1. Mengubah nama agar tidak bentrok dengan Button bawaan
 }
 
 // Menambahkan Preview untuk melihat tampilan komponen secara terisolasi
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "Enabled Button")
 @Composable
-private fun AuthButtonPreview() {
+private fun ButtonEnabledPreview() {
     RumahAmanTheme {
-        Button(
+        Button( // Menggunakan nama Button
             text = "Masuk",
             onClick = { }
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Disabled Button")
+@Composable
+private fun ButtonDisabledPreview() {
+    RumahAmanTheme {
+        Button( // Menggunakan nama Button
+            text = "Masuk",
+            onClick = { },
+            enabled = false // Preview untuk status nonaktif
         )
     }
 }
