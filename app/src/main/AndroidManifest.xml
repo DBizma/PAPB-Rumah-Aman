@@ -10,7 +10,8 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.RumahAman">
+        android:theme="@style/Theme.RumahAman"
+        android:name=".RumahAmanApp">
         <activity
             android:name=".MainActivity"
             android:exported="true"
