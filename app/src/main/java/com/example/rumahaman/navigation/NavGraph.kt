@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.rumahaman.presentation.login.LoginScreen
 import com.example.rumahaman.presentation.register.RegisterScreen
 // import com.example.rumahaman.presentation.login.LoginScreen // Anda akan butuh ini nanti
 
@@ -35,7 +36,7 @@ fun AppNavHost() {
         // Buat composable untuk LoginScreen agar navigasi berhasil
         composable(Routes.LOGIN_SCREEN) {
 
-            // LoginScreen(navController = navController)
+            LoginScreen(navController = navController)
         }
     }
 }
