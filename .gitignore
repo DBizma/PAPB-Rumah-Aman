@@ -1,15 +1,38 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+# ======================
+# Android / Kotlin / Compose Project
+# ======================
+
+# Gradle
+.gradle/
+build/
+*/build/
+
+# Local configuration
 local.properties
+.gradle/
+.gradle/*
+
+# IntelliJ / Android Studio
+.idea/
+*.iml
+
+# Keystore files (jangan commit file sensitif)
+*.jks
+*.keystore
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# NDK / Native
+.externalNativeBuild/
+.cxx/
+
+# Captures
+captures/
+
+# Firebase
+google-services.json
+
+# Misc
+*.log
