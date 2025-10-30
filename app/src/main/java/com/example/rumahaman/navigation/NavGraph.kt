@@ -18,6 +18,8 @@ object Routes {
     const val ONBOARDING = "onboarding"
     const val DASHBOARD = "dashboard"
     const val SPLASH_SCREEN = "splashscreen"
+    const val NOTIFICATION_SCREEN = "notification"
+    const val SETTINGS_SCREEN = "settings"
 }
 
 @Composable
@@ -46,7 +48,7 @@ fun AppNavHost() {
         }
 
         composable(Routes.DASHBOARD) {
-            Dashboard()
+            com.example.rumahaman.presentation.main.MainScreen()
         }
     }
 }
