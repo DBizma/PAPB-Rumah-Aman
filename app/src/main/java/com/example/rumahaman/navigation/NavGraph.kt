@@ -10,12 +10,14 @@ import com.example.rumahaman.presentation.dashboard.Dashboard
 import com.example.rumahaman.presentation.halamanAwal.HalamanAwalScreen
 import com.example.rumahaman.presentation.login.LoginScreen
 import com.example.rumahaman.presentation.register.RegisterScreen
+import com.example.rumahaman.presentation.splash.SplashScreen
 
 object Routes {
     const val REGISTER_SCREEN = "register"
     const val LOGIN_SCREEN = "login"
     const val ONBOARDING = "onboarding"
     const val DASHBOARD = "dashboard"
+    const val SPLASH_SCREEN = "splashscreen"
 }
 
 @Composable
@@ -24,7 +26,7 @@ fun AppNavHost() {
 
     NavHost(
         navController = navController,
-        startDestination = Routes.ONBOARDING
+        startDestination = Routes.SPLASH_SCREEN
     ) {
         composable(Routes.REGISTER_SCREEN) {
             RegisterScreen(navController = navController)
@@ -37,6 +39,10 @@ fun AppNavHost() {
 
         composable(Routes.ONBOARDING) {
             HalamanAwalScreen(navController = navController)
+        }
+
+        composable(Routes.SPLASH_SCREEN) {
+            SplashScreen(navController = navController)
         }
 
         composable(Routes.DASHBOARD) {

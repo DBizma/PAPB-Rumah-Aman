@@ -53,7 +53,7 @@ fun RegisterScreen(
     var isChecked by remember { mutableStateOf(true) }
 
     // Logika Validasi Sederhana (UI TIDAK BERUBAH)
-    val isNameValid = name.length > 3
+    val isNameValid = name.length >= 3
     val isEmailValid = email.contains("@")
     val isPasswordValid = password.length >= 8
     val doPasswordsMatch = password == confirmPassword && password.isNotEmpty()
