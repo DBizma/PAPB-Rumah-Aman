@@ -1,11 +1,6 @@
 package com.example.rumahaman.presentation.register
 
-// --- Impor Tambahan untuk Integrasi ---
 import android.widget.Toast
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
-// ------------------------------------
-
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.ClickableText
@@ -28,6 +23,8 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.rumahaman.R
 import com.example.rumahaman.navigation.Routes
@@ -35,62 +32,59 @@ import com.example.rumahaman.presentation.ui.Button
 import com.example.rumahaman.presentation.ui.TextFieldAuth
 import com.example.rumahaman.presentation.ui.theme.*
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
-    // --- Perubahan untuk Integrasi ---
-    navController: NavController, // 1. Tambahkan NavController
+    navController: NavController,
     modifier: Modifier = Modifier,
-    viewModel: RegisterViewModel = hiltViewModel() // 2. Dapatkan ViewModel dari Hilt
-    // -------------------------------
+    viewModel: RegisterViewModel = hiltViewModel()
 ) {
-    // State untuk menyimpan input pengguna (UI TIDAK BERUBAH)
+    // State untuk menyimpan input pengguna
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
-    var isChecked by remember { mutableStateOf(true) }
+    var isChecked by remember { mutableStateOf(false) } // Default ke false agar pengguna harus mencentang
 
-    // Logika Validasi Sederhana (UI TIDAK BERUBAH)
+    // Logika Validasi Sederhana
     val isNameValid = name.length >= 3
     val isEmailValid = email.contains("@")
     val isPasswordValid = password.length >= 8
     val doPasswordsMatch = password == confirmPassword && password.isNotEmpty()
 
-    // --- Penambahan State dan Efek untuk Integrasi ---
-    val registerState = viewModel.registerState
+    // Mengambil state dari ViewModel
+    val registerState by viewModel.registerState.collectAsState()
     val context = LocalContext.current
 
+    // Efek untuk menangani navigasi setelah registrasi berhasil
     LaunchedEffect(key1 = true) {
-        viewModel.navigationChannel.collect { event ->
-            when(event) {
-                is RegisterViewModel.NavigationEvent.NavigateToLogin -> {
-                    Toast.makeText(context, "Registrasi Berhasil!", Toast.LENGTH_SHORT).show()
-                    navController.navigate("login") {
-                        popUpTo("register") { inclusive = true }
-                    }
-                }
+        viewModel.navigationChannel.collect {
+            // Ketika ViewModel mengirim sinyal, tampilkan pesan dan navigasi ke Login
+            Toast.makeText(context, "Registrasi berhasil! Silakan login.", Toast.LENGTH_LONG).show()
+            navController.navigate(Routes.LOGIN_SCREEN) {
+                // Hapus semua history navigasi dari Register ke belakang
+                popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                // Pastikan hanya ada satu instance Login Screen
+                launchSingleTop = true
             }
         }
     }
-    // Menampilkan pesan error jika ada
+
+    // Efek untuk menampilkan pesan error dari ViewModel
     LaunchedEffect(key1 = registerState.error) {
         registerState.error?.let {
+            // Tampilkan pesan error hanya jika ada
             Toast.makeText(context, it, Toast.LENGTH_LONG).show()
         }
     }
-    // --------------------------------------------------
 
     Surface(modifier = modifier.fillMaxSize()) {
-        // Box untuk menumpuk Column dengan CircularProgressIndicator
         Box(modifier = Modifier.fillMaxSize()) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 24.dp)
             ) {
-                // Semua UI di bawah ini TIDAK SAYA UBAH sama sekali
                 // Bagian Header
                 Row(
                     modifier = Modifier
@@ -98,7 +92,7 @@ fun RegisterScreen(
                         .padding(top = 24.dp, bottom = 24.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(onClick = { navController.popBackStack() }) { //<- Ditambahkan aksi kembali
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Kembali"
@@ -169,29 +163,27 @@ fun RegisterScreen(
                     ClickableText(
                         text = annotatedText,
                         style = MaterialTheme.typography.bodyMedium,
-                        onClick = { offset ->
-                            // ... logika klik teks ...
-                        }
+                        onClick = { /* Anda bisa tambahkan logika navigasi ke halaman web di sini */ }
                     )
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // --- Perubahan untuk Integrasi ---
-                // Menggunakan AuthButton dan memanggil ViewModel
+                // Tombol Daftar dengan logika yang sudah diperbaiki
                 Button(
                     text = "Daftar",
                     onClick = {
                         viewModel.onRegisterClick(
+                            name = name,
                             email = email,
                             pass = password,
-                            confirmPass = confirmPassword
+                            confirmPass = confirmPassword,
+                            isTermsChecked = isChecked
                         )
                     },
                     // Nonaktifkan tombol saat loading atau jika checkbox tidak dicentang
                     enabled = !registerState.isLoading && isChecked
                 )
-                // -------------------------------
 
                 Spacer(modifier = Modifier.height(24.dp))
 
@@ -215,12 +207,10 @@ fun RegisterScreen(
                 }
             }
 
-            // --- Penambahan untuk Integrasi ---
             // Tampilkan Loading Indicator di tengah jika sedang loading
             if (registerState.isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             }
-            // ------------------------------------
         }
     }
 }

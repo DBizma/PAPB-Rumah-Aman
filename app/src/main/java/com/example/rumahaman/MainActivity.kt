@@ -24,7 +24,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             // Hapus pembungkus RumahAmanTheme
             Surface(modifier = Modifier.fillMaxSize()) {
-                AppNavHost( )
+                AppNavHost()
             }
         }
     }
