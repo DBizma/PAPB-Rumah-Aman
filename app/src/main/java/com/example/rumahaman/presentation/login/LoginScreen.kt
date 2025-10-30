@@ -57,9 +57,9 @@ fun LoginScreen(
                 is LoginViewModel.NavigationEvent.NavigateToHome -> {
                     Toast.makeText(context, "Login Berhasil!", Toast.LENGTH_SHORT).show()
                     // Navigasi ke Home dan bersihkan backstack
-//                    navController.navigate("home_screen") { // Ganti "home_screen" dengan rute home Anda
-//                        popUpTo(Routes.LOGIN_SCREEN) { inclusive = true }
-//                    }
+                    navController.navigate("dashboard") { // Ganti "home_screen" dengan rute home Anda
+                        popUpTo(Routes.LOGIN_SCREEN) { inclusive = true }
+                    }
                 }
             }
         }
@@ -80,8 +80,7 @@ fun LoginScreen(
                     .fillMaxSize()
                     .padding(horizontal = 24.dp)
             ) {
-                // Semua UI di bawah ini TIDAK SAYA UBAH sama sekali
-                // Bagian Header (Tombol Kembali dan Judul)
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()

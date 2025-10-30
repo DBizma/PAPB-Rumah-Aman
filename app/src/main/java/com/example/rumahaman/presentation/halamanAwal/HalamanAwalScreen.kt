@@ -123,6 +123,7 @@ fun HalamanAwalScreen(
 
                 Button(
                     onClick = { navController.navigate(Routes.LOGIN_SCREEN) {
+                        popUpTo(Routes.ONBOARDING) { inclusive = true }
                                     launchSingleTop = true
                                  }
                               },
