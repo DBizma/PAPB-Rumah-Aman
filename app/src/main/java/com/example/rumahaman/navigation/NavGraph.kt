@@ -25,7 +25,6 @@ object Routes {
     const val SPLASH_SCREEN = "splashscreen"
     const val NOTIFICATION_SCREEN = "notification"
     const val SETTINGS_SCREEN = "settings"
-    // const val HOME_SCREEN = "home_screen"
     const val OTP_REQUEST_SCREEN = "otp_request"
     const val OTP_VERIFY_SCREEN = "otp_verify"
 }
