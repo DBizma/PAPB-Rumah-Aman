@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.rememberNavController
 import com.example.rumahaman.R
+import com.example.rumahaman.navigation.Routes
 import com.example.rumahaman.presentation.ui.Button
 import com.example.rumahaman.presentation.ui.TextFieldAuth
 import com.example.rumahaman.presentation.ui.theme.*
@@ -52,7 +53,7 @@ fun RegisterScreen(
     var isChecked by remember { mutableStateOf(true) }
 
     // Logika Validasi Sederhana (UI TIDAK BERUBAH)
-    val isNameValid = name.length > 3
+    val isNameValid = name.length >= 3
     val isEmailValid = email.contains("@")
     val isPasswordValid = password.length >= 8
     val doPasswordsMatch = password == confirmPassword && password.isNotEmpty()
@@ -204,7 +205,12 @@ fun RegisterScreen(
                     ClickableText(
                         text = AnnotatedString("Masuk di sini"),
                         style = MaterialTheme.typography.bodyMedium.copy(color = LinkColor, fontWeight = FontWeight.Bold),
-                        onClick = { navController.navigate("login") } //<- Navigasi ke login
+                        onClick = {
+                            navController.navigate(Routes.LOGIN_SCREEN) {
+                                launchSingleTop = true
+                                popUpTo(Routes.REGISTER_SCREEN) { inclusive = true }
+                            }
+                        }
                     )
                 }
             }

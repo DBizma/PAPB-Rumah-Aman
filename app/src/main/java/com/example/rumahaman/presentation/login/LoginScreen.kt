@@ -57,7 +57,7 @@ fun LoginScreen(
                 is LoginViewModel.NavigationEvent.NavigateToHome -> {
                     Toast.makeText(context, "Login Berhasil!", Toast.LENGTH_SHORT).show()
                     // Navigasi ke Home dan bersihkan backstack
-                    navController.navigate("home_screen") { // Ganti "home_screen" dengan rute home Anda
+                    navController.navigate("dashboard") { // Ganti "home_screen" dengan rute home Anda
                         popUpTo(Routes.LOGIN_SCREEN) { inclusive = true }
                     }
                 }
@@ -80,15 +80,14 @@ fun LoginScreen(
                     .fillMaxSize()
                     .padding(horizontal = 24.dp)
             ) {
-                // Semua UI di bawah ini TIDAK SAYA UBAH sama sekali
-                // Bagian Header (Tombol Kembali dan Judul)
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 24.dp, bottom = 24.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(onClick = { navController.popBackStack() }) { //<- Ditambahkan aksi kembali
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Kembali"
@@ -188,7 +187,11 @@ fun LoginScreen(
                     ClickableText(
                         text = AnnotatedString("Daftarkan dirimu"),
                         style = MaterialTheme.typography.bodyMedium.copy(color = LinkColor, fontWeight = FontWeight.Bold),
-                        onClick = { navController.navigate(Routes.REGISTER_SCREEN) } // <- Navigasi ke Register
+                        onClick = {
+                            navController.navigate(Routes.REGISTER_SCREEN) {
+                                launchSingleTop = true
+                            }
+                        }
                     )
                 }
             }
