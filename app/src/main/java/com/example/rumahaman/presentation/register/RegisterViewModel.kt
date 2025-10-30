@@ -1,77 +1,39 @@
 package com.example.rumahaman.presentation.register
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.rumahaman.data.repository.Result
-import com.example.rumahaman.domain.usecase.register.RegisterUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-// --- IMPOR TAMBAHAN ---
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
-// --------------------
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class RegisterViewModel @Inject constructor(
-    private val registerUseCase: RegisterUseCase
-) : ViewModel() {
+class RegisterViewModel @Inject constructor() : ViewModel() {
 
-    var registerState by mutableStateOf(RegisterState())
-        private set
-
-    // --- PENAMBAHAN NAVIGATION CHANNEL ---
-    // 1. Channel untuk mengirim event satu kali (one-time event)
-    private val _navigationChannel = Channel<NavigationEvent>()
+    // Gunakan Channel untuk navigasi sekali jalan (single-shot event)
+    private val _navigationChannel = Channel<Unit>()
     val navigationChannel = _navigationChannel.receiveAsFlow()
-    // -------------------------------------
 
-    fun onRegisterClick(email: String, pass: String, confirmPass: String) {
-        // Validasi dasar
-        if (email.isBlank() || pass.isBlank()) {
-            registerState = registerState.copy(error = "Email dan kata sandi tidak boleh kosong.")
-            return
-        }
-        if (pass != confirmPass) {
-            registerState = registerState.copy(error = "Kata sandi dan konfirmasi kata sandi tidak cocok!")
-            return
-        }
+    fun onRegisterClick(
+        name: String,
+        email: String,
+        pass: String,
+        confirmPass: String,
+        isTermsChecked: Boolean
+    ): String? { // Return String? untuk pesan error
+        // Lakukan semua validasi di sini
+        if (name.length <= 3) return "Nama harus lebih dari 2 karakter"
+        if (!email.contains("@")) return "Format email tidak valid"
+        if (pass.length < 8) return "Password minimal 8 karakter"
+        if (pass != confirmPass) return "Password tidak cocok"
+        if (!isTermsChecked) return "Anda harus menyetujui Ketentuan Layanan"
 
+        // Jika semua validasi lolos, kirim event untuk navigasi
         viewModelScope.launch {
-            registerUseCase(email, pass).collect { result ->
-                registerState = when (result) {
-                    is Result.Loading -> {
-                        registerState.copy(isLoading = true, error = null)
-                    }
-                    is Result.Success -> {
-                        // 2. Saat registrasi sukses, kirim event navigasi melalui Channel
-                        _navigationChannel.send(NavigationEvent.NavigateToLogin)
-                        // Kita tetap set state sukses jika ingin menampilkan Toast atau pesan lain
-                        registerState.copy(isLoading = false, isSuccess = true)
-                    }
-                    is Result.Error -> {
-                        registerState.copy(
-                            isLoading = false,
-                            error = result.exception.message ?: "Terjadi kesalahan yang tidak diketahui"
-                        )
-                    }
-                }
-            }
+            _navigationChannel.send(Unit)
         }
-    }
 
-    // 3. Sealed class untuk mendefinisikan semua event navigasi yang mungkin
-    sealed class NavigationEvent {
-        data object NavigateToLogin : NavigationEvent()
-        // Anda bisa menambahkan event lain di sini untuk navigasi ke halaman lain
+        return null // Tidak ada error
     }
 }
-
-data class RegisterState(
-    val isLoading: Boolean = false,
-    val isSuccess: Boolean = false,
-    val error: String? = null
-)
