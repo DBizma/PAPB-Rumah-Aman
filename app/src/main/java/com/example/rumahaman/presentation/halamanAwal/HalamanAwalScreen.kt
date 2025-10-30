@@ -34,6 +34,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.zIndex
 import coil.compose.AsyncImagePainter.State.Empty.painter
 import com.example.rumahaman.R
+import com.example.rumahaman.navigation.Routes
 import com.google.common.io.Files.append
 
 
@@ -121,7 +122,10 @@ fun HalamanAwalScreen(
                 )
 
                 Button(
-                    onClick = {  },
+                    onClick = { navController.navigate(Routes.LOGIN_SCREEN) {
+                                    launchSingleTop = true
+                                 }
+                              },
                     modifier = Modifier
                         .fillMaxWidth(0.6f)
                         .height(48.dp)
