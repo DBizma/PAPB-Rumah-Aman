@@ -9,25 +9,41 @@ import kotlinx.coroutines.flow.callbackFlow
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
-    private val firebaseAuth: FirebaseAuth // Dapatkan instance FirebaseAuth dari Hilt
+    private val firebaseAuth: FirebaseAuth
 ) : AuthRepository {
 
     override suspend fun registerUser(email: String, password: String): Flow<Result<AuthResult>> = callbackFlow {
-        trySend(Result.Loading) // Kirim status loading
+        // ... kode registrasi yang sudah ada ...
+        trySend(Result.Loading)
         firebaseAuth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    // Jika berhasil, kirim hasilnya
-                    trySend(Result.Success(task.result!!))
+                    task.result?.let { trySend(Result.Success(it)) }
                 } else {
-                    // Jika gagal, kirim exception-nya
                     trySend(Result.Error(task.exception ?: Exception("Registrasi gagal")))
                 }
             }
-        // Pastikan flow tetap terbuka sampai listener selesai
-        awaitClose { /* bisa ditambahkan logika cleanup jika perlu */ }
+        awaitClose { channel.close() }
+    }
+
+    // --- IMPLEMENTASIKAN FUNGSI BARU DI BAWAH INI ---
+    override suspend fun loginUser(email: String, password: String): Flow<Result<AuthResult>> = callbackFlow {
+        trySend(Result.Loading)
+        firebaseAuth.signInWithEmailAndPassword(email, password)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    // Kirim hasil yang sukses jika tugas berhasil
+                    task.result?.let { trySend(Result.Success(it)) }
+                } else {
+                    // Kirim error jika tugas gagal
+                    trySend(Result.Error(task.exception ?: Exception("Login gagal")))
+                }
+            }
+        // Pastikan channel ditutup saat tidak lagi digunakan oleh coroutine
+        awaitClose { channel.close() }
     }
 }
+
 
 // Kita butuh sealed class untuk membungkus hasil (Loading, Success, Error)
 sealed class Result<out T> {

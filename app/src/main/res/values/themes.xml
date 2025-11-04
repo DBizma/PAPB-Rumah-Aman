@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
+    <!-- Tema aplikasi utama Anda (biarkan seperti ini) -->
     <style name="Theme.RumahAman" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <!-- 1. TAMBAHKAN STYLE BARU DI BAWAH INI -->
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <!-- Atur latar belakang splash screen. Ganti jika perlu -->
+        <item name="windowSplashScreenBackground">@android:color/white</item>
+
+        <!-- Atur ikon di tengah splash screen. GUNAKAN LOGO ANDA -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/logo</item>
+
+        <!-- Atur tema yang akan digunakan SETELAH splash screen selesai -->
+        <item name="postSplashScreenTheme">@style/Theme.RumahAman</item>
+    </style>
 </resources>
+    

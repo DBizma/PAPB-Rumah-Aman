@@ -9,6 +9,5 @@ interface AuthRepository {
     // Fungsi untuk mendaftarkan pengguna dengan email dan password
     suspend fun registerUser(email: String, password: String): Flow<Result<AuthResult>>
 
-    // Tambahkan fungsi lain nanti
-    // suspend fun loginUser(email: String, password: String): Flow<Result<AuthResult>>
+    suspend fun loginUser(email: String, password: String): Flow<Result<AuthResult>>
 }
