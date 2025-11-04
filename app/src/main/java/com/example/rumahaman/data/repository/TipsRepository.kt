@@ -8,6 +8,9 @@ import kotlinx.coroutines.tasks.await
 import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.channels.awaitClose // <-- IMPORT BARU
+import kotlinx.coroutines.flow.Flow // <-- IMPORT BARU
+import kotlinx.coroutines.flow.callbackFlow // <-- IMPORT BARU
 
 // Data class untuk menampung data mentah dari Firestore
 data class TipFirestore(
@@ -24,36 +27,43 @@ class TipsRepository @Inject constructor(
     private val firestore: FirebaseFirestore
 ) {
 
-    // Fungsi untuk mengambil tips terbaru dari Firestore
-    // Nama fungsi bisa kita ubah agar lebih sesuai
-    suspend fun getAllTips(): List<NotificationItem.Tip> {
-        try {
-            // Ambil SEMUA dokumen dari koleksi 'tips', urutkan berdasarkan yang terbaru
-            val snapshot = firestore.collection("tips")
-                .orderBy("createdAt", Query.Direction.DESCENDING)
-                // .limit(limit.toLong()) // <-- HAPUS ATAU KOMENTARI BARIS INI
-                .get()
-                .await()
-
-            // ... di dalam fungsi getAllTips()
-// ...
-            return snapshot.documents.mapNotNull { doc ->
-                val tipData = doc.toObject(TipFirestore::class.java)
-                tipData?.let {
-                    NotificationItem.Tip(
-                        id = doc.id,
-                        title = it.title,
-                        description = it.description,
-                        link = it.link,
-                        // --- PASTIKAN BARIS INI ADA ---
-                        createdAt = it.createdAt // Mengisi properti 'createdAt' dari data Firestore
-                    )
+    // Ubah fungsi ini agar mengembalikan Flow
+    fun getTipsStream(): Flow<List<NotificationItem.Tip>> = callbackFlow {
+        // Query ke Firestore
+        val listener = firestore.collection("tips")
+            .orderBy("createdAt", Query.Direction.DESCENDING)
+            .addSnapshotListener { snapshot, error ->
+                // Jika ada error dari listener, tutup flow dengan error
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
                 }
+
+                // Jika snapshot null, jangan lakukan apa-apa
+                if (snapshot == null) {
+                    return@addSnapshotListener
+                }
+
+                // Ubah dokumen menjadi list NotificationItem.Tip
+                val tipsList = snapshot.documents.mapNotNull { doc ->
+                    val tipData = doc.toObject(TipFirestore::class.java)
+                    tipData?.let {
+                        NotificationItem.Tip(
+                            id = doc.id,
+                            title = it.title,
+                            description = it.description,
+                            link = it.link,
+                            createdAt = it.createdAt
+                        )
+                    }
+                }
+
+                // Kirim data terbaru ke dalam Flow
+                trySend(tipsList)
             }
-// ...
-        } catch (e: Exception) {
-            println("Error fetching tips: ${e.message}")
-            return emptyList()
-        }
+
+        // Saat Flow dibatalkan (misal: user keluar dari layar),
+        // hentikan listener untuk menghemat resource.
+        awaitClose { listener.remove() }
     }
 }

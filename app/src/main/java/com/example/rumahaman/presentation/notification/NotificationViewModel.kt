@@ -16,7 +16,7 @@ import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
-// Data class baru untuk menampung data yang sudah dikelompokkan
+// Data class State (tidak ada perubahan)
 data class NotificationState(
     val groupedNotifications: Map<LocalDate, List<NotificationItem>> = emptyMap(),
     val isLoading: Boolean = true
@@ -33,57 +33,66 @@ class NotificationViewModel @Inject constructor(
     val state = _state.asStateFlow()
 
     init {
-        fetchAndGroupNotifications()
+        listenForNotifications()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun fetchAndGroupNotifications() {
+    private fun listenForNotifications() {
         viewModelScope.launch {
             _state.value = NotificationState(isLoading = true)
 
-            // 1. Ambil semua notifikasi Tips
-            val tipNotifications = tipsRepository.getAllTips()
+            // Dapatkan tanggal pembuatan akun sebagai LocalDate SEKALI SAJA
+            val accountCreationTimestamp = auth.currentUser?.metadata?.creationTimestamp ?: 0L
+            val accountCreationDate = Instant.ofEpochMilli(accountCreationTimestamp)
+                .atZone(ZoneId.systemDefault()).toLocalDate()
 
-            // 2. Buat notifikasi Selamat Datang (jika relevan)
-            val welcomeNotifications = createWelcomeNotifications()
+            tipsRepository.getTipsStream().collect { tipNotifications ->
+                val welcomeNotifications = createWelcomeNotifications(accountCreationTimestamp)
+                val allNotifications = tipNotifications + welcomeNotifications
 
-            // 3. Gabungkan semua notifikasi ke dalam satu list
-            val allNotifications = (tipNotifications + welcomeNotifications).toMutableList()
-
-            // 4. Kelompokkan notifikasi berdasarkan tanggal
-            val groupedData = allNotifications.groupBy {
-                // Konversi timestamp dari notifikasi (yang ada di `createdAt` dalam `Date`) ke `LocalDate`
-                val timestamp = when (it) {
-                    is NotificationItem.Tip -> it.createdAt?.time ?: 0L
-                    is NotificationItem.Welcome, is NotificationItem.NewAccount -> {
-                        // Untuk notifikasi selamat datang, kita anggap tanggalnya sama dengan tanggal pembuatan akun
-                        auth.currentUser?.metadata?.creationTimestamp ?: 0L
-                    }
+                // --- LOGIKA FILTER BARU ---
+                // Filter notifikasi agar hanya menampilkan yang tanggalnya SAMA DENGAN atau SETELAH tanggal pembuatan akun.
+                val filteredNotifications = allNotifications.filter { item ->
+                    val itemDate = getItemDate(item, accountCreationTimestamp)
+                    // !isBefore sama dengan isAfter atau isEqual
+                    !itemDate.isBefore(accountCreationDate)
                 }
-                Instant.ofEpochMilli(timestamp).atZone(ZoneId.systemDefault()).toLocalDate()
+                // --- AKHIR LOGIKA FILTER ---
+
+                val groupedData = filteredNotifications.groupBy { item ->
+                    // Gunakan fungsi helper yang sama untuk konsistensi
+                    getItemDate(item, accountCreationTimestamp)
+                }.toSortedMap(compareByDescending { it })
+
+                _state.value = NotificationState(
+                    groupedNotifications = groupedData,
+                    isLoading = false
+                )
             }
-                // Urutkan grup berdasarkan tanggal (terbaru di atas)
-                .toSortedMap(compareByDescending { it })
-
-
-            _state.value = NotificationState(
-                groupedNotifications = groupedData,
-                isLoading = false
-            )
         }
     }
 
-    private fun createWelcomeNotifications(): List<NotificationItem> {
-        val creationTimestamp = auth.currentUser?.metadata?.creationTimestamp ?: return emptyList()
+    // Fungsi helper untuk mendapatkan tanggal dari item notifikasi secara konsisten
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun getItemDate(item: NotificationItem, defaultTimestamp: Long): LocalDate {
+        val timestamp = when (item) {
+            is NotificationItem.Tip -> item.createdAt?.time ?: defaultTimestamp
+            is NotificationItem.Welcome, is NotificationItem.NewAccount -> defaultTimestamp
+        }
+        return Instant.ofEpochMilli(timestamp).atZone(ZoneId.systemDefault()).toLocalDate()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun createWelcomeNotifications(creationTimestamp: Long): List<NotificationItem> {
+        if (creationTimestamp == 0L) return emptyList()
+
         val creationInstant = Instant.ofEpochMilli(creationTimestamp)
         val currentInstant = Instant.now()
         val accountAgeInDays = ChronoUnit.DAYS.between(creationInstant, currentInstant)
 
-        // Hanya tampilkan notifikasi ini jika akun dibuat dalam 7 hari terakhir
         return if (accountAgeInDays <= 7) {
             val userName = auth.currentUser?.displayName ?: "Pengguna Baru"
             listOf(
-                // Kita urutkan agar 'Welcome' di atas 'NewAccount' jika tanggalnya sama
                 NotificationItem.Welcome("welcome1", userName),
                 NotificationItem.NewAccount("newacc1")
             )
