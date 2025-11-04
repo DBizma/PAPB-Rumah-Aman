@@ -85,7 +85,8 @@ fun BottomNavigationBar(navController: NavController) {
                     selectedIconColor = LinkColor,
                     selectedTextColor = LinkColor,
                     unselectedIconColor = LightGreenGray,
-                    unselectedTextColor = LightGreenGray
+                    unselectedTextColor = LightGreenGray,
+                    indicatorColor = Color.Transparent
                 )
             )
         }

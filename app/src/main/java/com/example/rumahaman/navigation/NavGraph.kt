@@ -12,6 +12,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.rumahaman.presentation.dashboard.Dashboard
 import com.example.rumahaman.presentation.halamanAwal.HalamanAwalScreen
 import com.example.rumahaman.presentation.login.LoginScreen
+import com.example.rumahaman.presentation.notification.NotificationScreen
 import com.example.rumahaman.presentation.register.RegisterScreen
 import com.example.rumahaman.presentation.splash.SplashScreen
 
@@ -52,6 +53,10 @@ fun AppNavHost() {
 
         composable(Routes.DASHBOARD) {
             com.example.rumahaman.presentation.main.MainScreen()
+        }
+
+        composable(Routes.NOTIFICATION_SCREEN) {
+            NotificationScreen(navController = navController)
         }
     }
 }

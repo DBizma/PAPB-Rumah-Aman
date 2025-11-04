@@ -6,6 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.rumahaman.navigation.Routes
+import com.example.rumahaman.presentation.notification.NotificationScreen
 
 @Composable
 fun MainScreenNavGraph(navController: NavHostController) {
@@ -18,8 +19,7 @@ fun MainScreenNavGraph(navController: NavHostController) {
             Text("Ini adalah Home Screen")
         }
         composable(Routes.NOTIFICATION_SCREEN) {
-            // Ganti dengan Composable ProfileScreen Anda
-            Text("Ini adalah Notification Screen")
+            NotificationScreen(navController = navController)
         }
         composable(Routes.SETTINGS_SCREEN) {
             // Ganti dengan Composable SettingsScreen Anda
