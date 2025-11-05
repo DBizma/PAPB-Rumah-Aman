@@ -24,8 +24,11 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.navigation.NavController
 import com.example.rumahaman.R
 import androidx.compose.ui.unit.sp
+import com.example.rumahaman.navigation.Routes
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun IconUser() {
@@ -37,7 +40,10 @@ fun IconUser() {
 }
 
 @Composable
-fun DashboardScreen() {
+fun DashboardScreen(navController: NavController) {
+    // Ambil nama user dari Firebase Auth
+    val userName = FirebaseAuth.getInstance().currentUser?.displayName ?: "User"
+    
     Column (
         modifier = Modifier.fillMaxSize().padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -77,7 +83,7 @@ fun DashboardScreen() {
                         Row(
                             verticalAlignment = Alignment.CenterVertically // Agar teks dan ikon sejajar di tengah
                         ) {
-                            Text("Hi "+ "User, ", // Hapus bagian "(Icon)"
+                            Text("Hi $userName, ", // Gunakan userName dari Firebase Auth
                                 color = Color.White,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 18.sp
@@ -172,7 +178,7 @@ fun DashboardScreen() {
                         .clip(DiagonalCutTopLeftShape(cutSize = 36.dp, cornerRadius = 12.dp))
                         .background(Color(0xFFD9E6E2))
                         .clickable {
-                            println("Tombol Bagian 2B ditekan!")
+                            navController.navigate(Routes.CHATBOT_SCREEN)
                         },
                     horizontalAlignment = Alignment.End,
                     verticalArrangement = Arrangement.Bottom
@@ -270,7 +276,7 @@ fun DashboardScreen() {
 @Preview(showBackground = true)
 @Composable
 fun PreviewDashboardScreen() {
-    DashboardScreen()
+    DashboardScreen(navController = androidx.navigation.compose.rememberNavController())
 }
 
 

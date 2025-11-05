@@ -24,12 +24,8 @@ class ChatBotViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
 
     init {
-        // Dapatkan nama user dari Firebase Auth
-        val userName = auth.currentUser?.displayName ?: "User"
-        _uiState.update { it.copy(userName = userName) }
-        
         // Pesan sambutan dari chatbot
-        addBotMessage("Halo $userName! Saya adalah chatbot konselor RumahAman. Ada yang bisa saya bantu?")
+        addBotMessage("Halo! Saya adalah chatbot konselor RumahAman. Ada yang bisa saya bantu?")
     }
 
     fun onInputTextChange(text: String) {
@@ -99,7 +95,6 @@ class ChatBotViewModel @Inject constructor(
         _uiState.update { it.copy(messages = emptyList()) }
         
         // Tampilkan pesan sambutan lagi
-        val userName = _uiState.value.userName
-        addBotMessage("Halo $userName! Saya adalah chatbot konselor RumahAman. Ada yang bisa saya bantu?")
+        addBotMessage("Halo! Saya adalah chatbot konselor RumahAman. Ada yang bisa saya bantu?")
     }
 }
