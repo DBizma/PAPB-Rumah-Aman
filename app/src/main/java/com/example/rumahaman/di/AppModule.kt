@@ -2,8 +2,10 @@ package com.example.rumahaman.di
 
 import com.example.rumahaman.data.repository.AuthRepositoryImpl
 import com.example.rumahaman.data.repository.TipsRepositoryImpl
+import com.example.rumahaman.data.repository.UserRepositoryImpl
 import com.example.rumahaman.domain.repository.AuthRepository
 import com.example.rumahaman.domain.repository.TipsRepository
+import com.example.rumahaman.domain.repository.UserRepository
 import com.google.firebase.auth.FirebaseAuth // <-- 1. IMPORT FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
@@ -40,5 +42,12 @@ object AppModule {
     @Singleton
     fun provideAuthRepository(firebaseAuth: FirebaseAuth): AuthRepository {
         return AuthRepositoryImpl(firebaseAuth)
+    }
+
+    // 4. Provider untuk UserRepository
+    @Provides
+    @Singleton
+    fun provideUserRepository(firestore: FirebaseFirestore): UserRepository {
+        return UserRepositoryImpl(firestore)
     }
 }

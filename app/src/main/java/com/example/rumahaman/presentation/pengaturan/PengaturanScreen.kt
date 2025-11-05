@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.rumahaman.domain.model.User
 import com.example.rumahaman.navigation.Routes
 import com.example.rumahaman.presentation.ui.theme.LightGreenGray
 import com.example.rumahaman.presentation.ui.theme.Orange
@@ -36,7 +37,35 @@ fun PengaturanScreen(
     navController: NavController,
     viewModel: PengaturanViewModel = hiltViewModel()
 ) {
-    val userName by viewModel.userName.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+
+    // Dialog konfirmasi logout
+    if (uiState.showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.hideLogoutDialog() },
+            title = { Text("Konfirmasi Logout") },
+            text = { Text("Apakah Anda yakin ingin keluar dari akun?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.confirmLogout()
+                        navController.navigate(Routes.LOGIN_SCREEN) {
+                            popUpTo(navController.graph.id) {
+                                inclusive = true
+                            }
+                        }
+                    }
+                ) {
+                    Text("Ya, Keluar", color = Orange)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.hideLogoutDialog() }) {
+                    Text("Batal")
+                }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -61,101 +90,183 @@ fun PengaturanScreen(
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
-            // --- PERUBAHAN DIMULAI DI SINI ---
-            // Satu Card untuk menampung semuanya
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = LightGreenGray),
-                modifier = Modifier.fillMaxWidth(),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-            ) {
-                Column {
-                    // 1. Profile Section
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
+            when {
+                uiState.isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(56.dp)
-                                .clip(CircleShape)
-                                .background(Orange),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Person,
-                                contentDescription = "Profile Picture",
-                                tint = Color.White,
-                                modifier = Modifier.size(32.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Text(
-                            text = userName,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                        CircularProgressIndicator(color = Orange)
                     }
-
-                    // Tambahkan pemisah setelah Profile Section
-                    Divider(modifier = Modifier.padding(horizontal = 16.dp))
-
-                    // 2. Menu Section "Umum"
-                    Text(
-                        text = "Umum",
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp),
-                        color = Color.Black.copy(alpha = 0.7f)
-                    )
-                    MenuItem(
-                        icon = Icons.Default.Edit,
-                        text = "Edit Profil",
-                        onClick = { /* TODO: Navigasi ke Edit Profil */ }
-                    )
-                    MenuItem(
-                        icon = Icons.Default.Lock,
-                        text = "Ubah password",
-                        onClick = { /* TODO: Navigasi ke Ubah Password */ }
-                    )
-                    MenuItem(
-                        icon = Icons.AutoMirrored.Filled.ExitToApp,
-                        text = "Keluar",
-                        onClick = {
-                            viewModel.signOut()
-                            navController.navigate(Routes.LOGIN_SCREEN) {
-                                popUpTo(navController.graph.id) {
-                                    inclusive = true
-                                }
-                            }
+                }
+                uiState.error != null -> {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = uiState.error ?: "Terjadi kesalahan",
+                            color = Color.Red,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = { viewModel.refreshUserData() },
+                            colors = ButtonDefaults.buttonColors(containerColor = Orange)
+                        ) {
+                            Text("Coba Lagi")
                         }
+                    }
+                }
+                uiState.user != null -> {
+                    UserSettingsContent(
+                        user = uiState.user!!,
+                        onLogoutClick = { viewModel.showLogoutDialog() }
                     )
-
-                    // Tambahkan pemisah antar seksi menu
-                    Divider(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp))
-
-                    // 3. Menu Section "Masukan"
-                    Text(
-                        text = "Masukan",
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp),
-                        color = Color.Black.copy(alpha = 0.7f)
-                    )
-                    MenuItem(
-                        icon = Icons.Default.Warning,
-                        text = "Laporkan",
-                        onClick = { /* TODO: Navigasi ke Laporkan */ }
-                    )
-                    MenuItem(
-                        icon = Icons.Default.Email,
-                        text = "Kirim masukan",
-                        onClick = { /* TODO: Navigasi ke Kirim Masukan */ }
-                    )
-                    // Spacer di akhir untuk memberikan padding bawah
-                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
-            // --- PERUBAHAN SELESAI DI SINI ---
         }
+    }
+}
+
+@Composable
+fun UserSettingsContent(
+    user: User,
+    onLogoutClick: () -> Unit
+) {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = LightGreenGray),
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column {
+            // 1. Profile Section
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(CircleShape)
+                        .background(Orange),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "Profile Picture",
+                        tint = Color.White,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                Column {
+                    Text(
+                        text = user.name.ifEmpty { "Pengguna" },
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    if (user.email.isNotEmpty()) {
+                        Text(
+                            text = user.email,
+                            fontSize = 14.sp,
+                            color = Color.Gray
+                        )
+                    }
+                }
+            }
+
+            // Info tambahan user
+            if (user.gender.isNotEmpty() || user.age > 0 || user.province.isNotEmpty() || user.phoneNumber.isNotEmpty()) {
+                Divider(modifier = Modifier.padding(horizontal = 16.dp))
+                Column(modifier = Modifier.padding(16.dp)) {
+                    if (user.phoneNumber.isNotEmpty()) {
+                        InfoRow(label = "Nomor Telepon", value = user.phoneNumber)
+                    }
+                    if (user.gender.isNotEmpty()) {
+                        InfoRow(label = "Jenis Kelamin", value = user.gender)
+                    }
+                    if (user.age > 0) {
+                        InfoRow(label = "Usia", value = "${user.age} tahun")
+                    }
+                    if (user.province.isNotEmpty()) {
+                        InfoRow(label = "Provinsi", value = user.province)
+                    }
+                }
+            }
+
+            // Tambahkan pemisah setelah Profile Section
+            Divider(modifier = Modifier.padding(horizontal = 16.dp))
+
+            // 2. Menu Section "Umum"
+            Text(
+                text = "Umum",
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp),
+                color = Color.Black.copy(alpha = 0.7f)
+            )
+            MenuItem(
+                icon = Icons.Default.Edit,
+                text = "Edit Profil",
+                onClick = { /* TODO: Navigasi ke Edit Profil */ }
+            )
+            MenuItem(
+                icon = Icons.Default.Lock,
+                text = "Ubah password",
+                onClick = { /* TODO: Navigasi ke Ubah Password */ }
+            )
+            MenuItem(
+                icon = Icons.AutoMirrored.Filled.ExitToApp,
+                text = "Keluar",
+                onClick = onLogoutClick
+            )
+
+            // Tambahkan pemisah antar seksi menu
+            Divider(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp))
+
+            // 3. Menu Section "Masukan"
+            Text(
+                text = "Masukan",
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp),
+                color = Color.Black.copy(alpha = 0.7f)
+            )
+            MenuItem(
+                icon = Icons.Default.Warning,
+                text = "Laporkan",
+                onClick = { /* TODO: Navigasi ke Laporkan */ }
+            )
+            MenuItem(
+                icon = Icons.Default.Email,
+                text = "Kirim masukan",
+                onClick = { /* TODO: Navigasi ke Kirim Masukan */ }
+            )
+            // Spacer di akhir untuk memberikan padding bawah
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+    }
+}
+
+@Composable
+fun InfoRow(label: String, value: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = label,
+            fontSize = 14.sp,
+            color = Color.Gray
+        )
+        Text(
+            text = value,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium
+        )
     }
 }
 
