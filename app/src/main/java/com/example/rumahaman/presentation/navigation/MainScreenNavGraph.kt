@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.rumahaman.navigation.Routes
 import com.example.rumahaman.presentation.notification.NotificationScreen
+import com.example.rumahaman.presentation.pengaturan.PengaturanScreen
 
 @Composable
 fun MainScreenNavGraph(navController: NavHostController) {
@@ -24,8 +25,8 @@ fun MainScreenNavGraph(navController: NavHostController) {
             NotificationScreen(navController = navController)
         }
         composable(Routes.SETTINGS_SCREEN) {
-            // Nanti ganti dengan PengaturanScreen() Anda
-            Text("Ini adalah Pengaturan Screen")
+            // --- PERUBAHAN DI SINI ---
+            PengaturanScreen(navController = navController)
         }
     }
 }
