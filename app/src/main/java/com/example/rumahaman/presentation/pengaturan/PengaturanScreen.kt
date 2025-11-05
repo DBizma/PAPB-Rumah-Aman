@@ -1,5 +1,7 @@
 package com.example.rumahaman.presentation.pengaturan
 
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -7,7 +9,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -17,7 +18,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -25,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.rumahaman.R
 import com.example.rumahaman.domain.model.User
 import com.example.rumahaman.navigation.Routes
 import com.example.rumahaman.presentation.ui.theme.LightGreenGray
@@ -210,17 +213,17 @@ fun UserSettingsContent(
                 color = Color.Black.copy(alpha = 0.7f)
             )
             MenuItem(
-                icon = Icons.Default.Edit,
+                iconRes = R.drawable.profil,
                 text = "Edit Profil",
                 onClick = { /* TODO: Navigasi ke Edit Profil */ }
             )
             MenuItem(
-                icon = Icons.Default.Lock,
+                iconRes = R.drawable.password,
                 text = "Ubah password",
                 onClick = { /* TODO: Navigasi ke Ubah Password */ }
             )
             MenuItem(
-                icon = Icons.AutoMirrored.Filled.ExitToApp,
+                iconRes = R.drawable.keluar,
                 text = "Keluar",
                 onClick = onLogoutClick
             )
@@ -236,12 +239,12 @@ fun UserSettingsContent(
                 color = Color.Black.copy(alpha = 0.7f)
             )
             MenuItem(
-                icon = Icons.Default.Warning,
+                iconRes = R.drawable.lapor,
                 text = "Laporkan",
                 onClick = { /* TODO: Navigasi ke Laporkan */ }
             )
             MenuItem(
-                icon = Icons.Default.Email,
+                iconRes = R.drawable.masukan,
                 text = "Kirim masukan",
                 onClick = { /* TODO: Navigasi ke Kirim Masukan */ }
             )
@@ -273,7 +276,7 @@ fun InfoRow(label: String, value: String) {
 }
 
 @Composable
-fun MenuItem(icon: ImageVector, text: String, onClick: () -> Unit) {
+fun MenuItem(@DrawableRes iconRes: Int, text: String, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -285,13 +288,12 @@ fun MenuItem(icon: ImageVector, text: String, onClick: () -> Unit) {
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(Color.Transparent), // Ubah background jadi transparan karena sudah di dalam Card putih
+                .background(Color.Transparent),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = icon,
+            Image(
+                painter = painterResource(id = iconRes),
                 contentDescription = text,
-                tint = Orange,
                 modifier = Modifier.size(24.dp)
             )
         }
