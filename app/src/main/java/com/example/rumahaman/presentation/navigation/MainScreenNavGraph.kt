@@ -10,7 +10,10 @@ import com.example.rumahaman.presentation.notification.NotificationScreen
 import com.example.rumahaman.presentation.pengaturan.PengaturanScreen
 
 @Composable
-fun MainScreenNavGraph(navController: NavHostController) {
+fun MainScreenNavGraph(
+    navController: NavHostController,
+    rootNavController: NavHostController // <-- Tambahkan parameter untuk root NavController
+) {
     NavHost(
         navController = navController,
         startDestination = Routes.DASHBOARD // Halaman awal saat MainScreen terbuka adalah Beranda
@@ -26,7 +29,8 @@ fun MainScreenNavGraph(navController: NavHostController) {
         }
         composable(Routes.SETTINGS_SCREEN) {
             // --- PERUBAHAN DI SINI ---
-            PengaturanScreen(navController = navController)
+            // Pass rootNavController agar PengaturanScreen bisa navigate ke SPLASH
+            PengaturanScreen(navController = rootNavController)
         }
     }
 }

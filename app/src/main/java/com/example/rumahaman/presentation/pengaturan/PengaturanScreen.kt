@@ -49,10 +49,12 @@ fun PengaturanScreen(
                 TextButton(
                     onClick = {
                         viewModel.confirmLogout()
-                        navController.navigate(Routes.LOGIN_SCREEN) {
-                            popUpTo(navController.graph.id) {
+                        // Navigate ke SPLASH_SCREEN dan clear semua backstack
+                        navController.navigate(Routes.SPLASH_SCREEN) {
+                            popUpTo(0) {
                                 inclusive = true
                             }
+                            launchSingleTop = true
                         }
                     }
                 ) {

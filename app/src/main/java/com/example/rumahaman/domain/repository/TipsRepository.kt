@@ -7,4 +7,7 @@ import kotlinx.coroutines.flow.Flow
 interface TipsRepository {
     // Menggunakan Flow agar UI bisa mendapatkan update data secara real-time
     fun getAllTips(): Flow<Resource<List<Tip>>>
+    
+    // Stream untuk listen real-time updates dari Firestore
+    fun getTipsStream(): Flow<List<Tip>>
 }

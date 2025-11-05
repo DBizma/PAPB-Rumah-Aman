@@ -53,7 +53,7 @@ fun AppNavHost(
         // Saat rute ini dipanggil, kita hanya menampilkan MainScreen.
         // MainScreen akan mengelola navigasi internalnya sendiri.
         composable(Routes.DASHBOARD) {
-            MainScreen() // <-- Tidak perlu lagi meneruskan navController ke sini
+            MainScreen(rootNavController = navController) // <-- Pass navController utama
         }
 
         // Hapus rute NOTIFICATION_SCREEN dari sini karena sudah ditangani di dalam MainScreenNavGraph

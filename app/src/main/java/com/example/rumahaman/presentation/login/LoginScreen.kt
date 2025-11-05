@@ -56,9 +56,10 @@ fun LoginScreen(
             when (event) {
                 is LoginViewModel.NavigationEvent.NavigateToHome -> {
                     Toast.makeText(context, "Login Berhasil!", Toast.LENGTH_SHORT).show()
-                    // Navigasi ke Home dan bersihkan backstack
-                    navController.navigate("dashboard") { // Ganti "home_screen" dengan rute home Anda
-                        popUpTo(Routes.LOGIN_SCREEN) { inclusive = true }
+                    // Navigasi ke Home dan bersihkan SEMUA backstack
+                    navController.navigate(Routes.DASHBOARD) {
+                        popUpTo(0) { inclusive = true }
+                        launchSingleTop = true
                     }
                 }
             }
