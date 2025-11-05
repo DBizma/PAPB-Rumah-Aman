@@ -1,20 +1,17 @@
-// presentation/navigation/NavGraph.kt
-
 package com.example.rumahaman.navigation
 
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.navigation.NavHostController
+import com.example.rumahaman.presentation.halamanAwal.HalamanAwalScreen
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.example.rumahaman.presentation.dashboard.Dashboard
-import com.example.rumahaman.presentation.halamanAwal.HalamanAwalScreen
 import com.example.rumahaman.presentation.login.LoginScreen
+import com.example.rumahaman.presentation.main.MainScreen
 import com.example.rumahaman.presentation.notification.NotificationScreen
 import com.example.rumahaman.presentation.register.RegisterScreen
 import com.example.rumahaman.presentation.splash.SplashScreen
+
 
 object Routes {
     const val REGISTER_SCREEN = "register"
@@ -26,37 +23,39 @@ object Routes {
     const val SETTINGS_SCREEN = "settings"
 }
 
-@Composable
-fun AppNavHost() {
-    val navController = rememberNavController()
 
+@Composable
+fun AppNavHost(
+    navController: NavHostController,
+    modifier: Modifier = Modifier,
+    startDestination: String = Routes.SPLASH_SCREEN
+) {
     NavHost(
         navController = navController,
-        startDestination = Routes.SPLASH_SCREEN
+        startDestination = startDestination,
+        modifier = modifier
     ) {
+        // --- Halaman di Luar MainScreen ---
         composable(Routes.REGISTER_SCREEN) {
             RegisterScreen(navController = navController)
         }
-
         composable(Routes.LOGIN_SCREEN) {
-
             LoginScreen(navController = navController)
         }
-
         composable(Routes.ONBOARDING) {
             HalamanAwalScreen(navController = navController)
         }
-
         composable(Routes.SPLASH_SCREEN) {
             SplashScreen(navController = navController)
         }
 
+        // --- Rute Utama ke MainScreen ---
+        // Saat rute ini dipanggil, kita hanya menampilkan MainScreen.
+        // MainScreen akan mengelola navigasi internalnya sendiri.
         composable(Routes.DASHBOARD) {
-            com.example.rumahaman.presentation.main.MainScreen()
+            MainScreen() // <-- Tidak perlu lagi meneruskan navController ke sini
         }
 
-        composable(Routes.NOTIFICATION_SCREEN) {
-            NotificationScreen(navController = navController)
-        }
+        // Hapus rute NOTIFICATION_SCREEN dari sini karena sudah ditangani di dalam MainScreenNavGraph
     }
 }

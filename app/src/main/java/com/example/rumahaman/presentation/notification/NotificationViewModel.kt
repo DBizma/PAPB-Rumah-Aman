@@ -5,6 +5,7 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.rumahaman.data.repository.TipsRepository
+import com.example.rumahaman.data.repository.UserPreferencesRepository
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,13 +27,18 @@ data class NotificationState(
 @HiltViewModel
 class NotificationViewModel @Inject constructor(
     private val auth: FirebaseAuth,
-    private val tipsRepository: TipsRepository
+    private val tipsRepository: TipsRepository,
+    private val userPrefsRepository: UserPreferencesRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(NotificationState())
     val state = _state.asStateFlow()
 
     init {
+        // Panggil fungsi ini saat ViewModel dibuat (artinya layar dibuka)
+        viewModelScope.launch { // <-- Panggil di dalam launch
+            userPrefsRepository.updateLastNotificationViewTimestamp()
+        }
         listenForNotifications()
     }
 

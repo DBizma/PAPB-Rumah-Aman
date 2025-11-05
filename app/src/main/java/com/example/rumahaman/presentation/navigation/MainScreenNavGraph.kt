@@ -12,18 +12,20 @@ import com.example.rumahaman.presentation.notification.NotificationScreen
 fun MainScreenNavGraph(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = Routes.DASHBOARD
+        startDestination = Routes.DASHBOARD // Halaman awal saat MainScreen terbuka adalah Beranda
     ) {
         composable(Routes.DASHBOARD) {
-            // Ganti dengan Composable HomeScreen Anda
-            Text("Ini adalah Home Screen")
+            // Nanti ganti dengan BerandaScreen() Anda
+            Text("Ini adalah Beranda Screen")
         }
         composable(Routes.NOTIFICATION_SCREEN) {
+            // Di sini kita TIDAK perlu meneruskan navController lagi ke NotificationScreen
+            // karena NotificationScreen tidak memiliki navigasi internal lebih lanjut.
             NotificationScreen(navController = navController)
         }
         composable(Routes.SETTINGS_SCREEN) {
-            // Ganti dengan Composable SettingsScreen Anda
-            Text("Ini adalah Settings Screen")
+            // Nanti ganti dengan PengaturanScreen() Anda
+            Text("Ini adalah Pengaturan Screen")
         }
     }
 }

@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext // <-- IMPORT BARU
 import androidx.core.content.ContextCompat // <-- IMPORT BARU
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.navigation.compose.rememberNavController
 import com.example.rumahaman.navigation.AppNavHost
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -61,7 +62,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             Surface(modifier = Modifier.fillMaxSize()) {
-                AppNavHost()
+                val navController = rememberNavController()
+                AppNavHost(navController = navController)
             }
         }
     }

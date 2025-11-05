@@ -58,6 +58,7 @@ dependencies {
     implementation("com.google.accompanist:accompanist-navigation-animation:0.36.0")
     implementation("androidx.core:core-splashscreen:1.0.1") // Atau versi terbaru
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
 
 
     implementation(libs.androidx.core.ktx)
