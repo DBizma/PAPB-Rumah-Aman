@@ -6,6 +6,9 @@ import androidx.navigation.NavHostController
 import com.example.rumahaman.presentation.halamanAwal.HalamanAwalScreen
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.rumahaman.presentation.dashboard.DashboardScreen
+import com.example.rumahaman.presentation.halamanAwal.HalamanAwalScreen
 import com.example.rumahaman.presentation.chatbot.ChatBotScreen
 import com.example.rumahaman.presentation.login.LoginScreen
 import com.example.rumahaman.presentation.main.MainScreen
