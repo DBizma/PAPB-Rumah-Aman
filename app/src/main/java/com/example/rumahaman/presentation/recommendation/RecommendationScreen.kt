@@ -4,12 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -24,16 +18,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.foundation.layout.weight // ← penting untuk Modifier.weight
 
-/* ========= Warna ========= */
+/* ====== Palet mirip Figma ====== */
 private val Mint = Color(0xFFE8F3EF)
 private val Teal = Color(0xFF2F7E83)
 private val ChipSelected = Color(0xFFD9ECE7)
 private val ChipBorder = Color(0xFFCCD6D2)
 private val OrangeDot = Color(0xFFFFA76B)
 
-/* ========= Model UI ========= */
+/* ====== Model UI sederhana ====== */
 enum class UiGender { Perempuan, LakiLaki }
 enum class UiViolence { Fisik, Verbal, FisikDanVerbal }
 enum class UiService { Psikologis, Hukum, PsikologisDanHukum }
@@ -47,7 +40,7 @@ data class RecFormState(
     val service: UiService? = UiService.Psikologis
 )
 
-/* ========= Screen ========= */
+/* ====== Screen ====== */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecommendationScreen(
@@ -78,7 +71,7 @@ fun RecommendationScreen(
                 .padding(padding)
                 .padding(horizontal = 20.dp)
         ) {
-            // Header ilustrasi bundar
+            // Header ilustrasi + judul
             Box(
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
@@ -87,7 +80,7 @@ fun RecommendationScreen(
                     .background(Mint),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Default.Person, contentDescription = null, tint = Teal, modifier = Modifier.size(42.dp))
+                Icon(Icons.Default.Person, contentDescription = null, tint = Teal)
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
@@ -100,12 +93,13 @@ fun RecommendationScreen(
             Spacer(Modifier.height(8.dp))
             Text(
                 "SISTEM REKOMENDASI",
+                color = Teal,
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                color = Teal
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             )
             Spacer(Modifier.height(12.dp))
 
+            // Kartu utama
             Surface(
                 color = Mint,
                 shape = RoundedCornerShape(24.dp),
@@ -117,7 +111,6 @@ fun RecommendationScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-
                     // Nama (read-only)
                     FieldLabel("Nama:")
                     OutlinedTextField(
@@ -129,115 +122,70 @@ fun RecommendationScreen(
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    // Gender (2 kartu dengan weight)
+                    // Jenis Kelamin (2 kartu, tanpa weight)
                     FieldLabel("Jenis Kelamin:")
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        GenderCard(
-                            text = "Wanita",
-                            selected = state.gender == UiGender.Perempuan,
-                            onClick = { state = state.copy(gender = UiGender.Perempuan) },
-                            modifier = Modifier.weight(1f)
-                        )
-                        GenderCard(
-                            text = "Pria",
-                            selected = state.gender == UiGender.LakiLaki,
-                            onClick = { state = state.copy(gender = UiGender.LakiLaki) },
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
+                    GenderRow(
+                        selected = state.gender,
+                        onSelect = { state = state.copy(gender = it) }
+                    )
 
-                    // Umur & Provinsi (2 kolom)
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            FieldLabel("Umur:")
-                            OutlinedTextField(
-                                value = state.age,
-                                onValueChange = { state = state.copy(age = it.filter(Char::isDigit).take(3)) },
-                                singleLine = true,
-                                modifier = Modifier.fillMaxWidth()
-                            )
+                    // Umur & Provinsi (dua kolom responsif, tanpa weight)
+                    FieldLabel("Umur & Provinsi:")
+                    AgeProvinceRow(
+                        age = state.age,
+                        province = state.province,
+                        onAgeChange = { state = state.copy(age = it.filter(Char::isDigit).take(3)) },
+                        onProvincePick = { provinceExpanded = true },
+                        provinces = provinces,
+                        expanded = provinceExpanded,
+                        onExpandedChange = { provinceExpanded = it },
+                        onProvinceSelected = {
+                            state = state.copy(province = it)
+                            provinceExpanded = false
                         }
-                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            FieldLabel("Provinsi:")
-                            ExposedDropdownMenuBox(
-                                expanded = provinceExpanded,
-                                onExpandedChange = { provinceExpanded = it },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                OutlinedTextField(
-                                    value = state.province,
-                                    onValueChange = {},
-                                    readOnly = true,
-                                    modifier = Modifier
-                                        .menuAnchor()
-                                        .fillMaxWidth(),
-                                    trailingIcon = {
-                                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = provinceExpanded)
-                                    }
-                                )
-                                ExposedDropdownMenu(
-                                    expanded = provinceExpanded,
-                                    onDismissRequest = { provinceExpanded = false }
-                                ) {
-                                    provinces.forEach { p ->
-                                        DropdownMenuItem(
-                                            text = { Text(p) },
-                                            onClick = {
-                                                state = state.copy(province = p)
-                                                provinceExpanded = false
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    )
 
                     // Jenis kekerasan
                     FieldLabel("Jenis kekerasan seksual yang didapatkan:")
-                    PillRow(
+                    PillRowFixed(
                         items = listOf("Fisik","Verbal","Fisik & Verbal"),
                         selectedIndex = when (state.violence) {
                             UiViolence.Fisik -> 0
                             UiViolence.Verbal -> 1
                             UiViolence.FisikDanVerbal -> 2
                             else -> -1
+                        },
+                        onSelected = { idx ->
+                            state = state.copy(
+                                violence = when (idx) {
+                                    0 -> UiViolence.Fisik
+                                    1 -> UiViolence.Verbal
+                                    else -> UiViolence.FisikDanVerbal
+                                }
+                            )
                         }
-                    ) { idx ->
-                        state = state.copy(
-                            violence = when (idx) {
-                                0 -> UiViolence.Fisik
-                                1 -> UiViolence.Verbal
-                                else -> UiViolence.FisikDanVerbal
-                            }
-                        )
-                    }
+                    )
 
                     // Bidang layanan
                     FieldLabel("Anda membutuhkan pelayanan di bidang:")
-                    PillRow(
+                    PillRowFixed(
                         items = listOf("Psikologi","Hukum","Psikologis & Hukum"),
                         selectedIndex = when (state.service) {
                             UiService.Psikologis -> 0
                             UiService.Hukum -> 1
                             UiService.PsikologisDanHukum -> 2
                             else -> -1
+                        },
+                        onSelected = { idx ->
+                            state = state.copy(
+                                service = when (idx) {
+                                    0 -> UiService.Psikologis
+                                    1 -> UiService.Hukum
+                                    else -> UiService.PsikologisDanHukum
+                                }
+                            )
                         }
-                    ) { idx ->
-                        state = state.copy(
-                            service = when (idx) {
-                                0 -> UiService.Psikologis
-                                1 -> UiService.Hukum
-                                else -> UiService.PsikologisDanHukum
-                            }
-                        )
-                    }
+                    )
 
                     // Tombol submit
                     Button(
@@ -254,10 +202,39 @@ fun RecommendationScreen(
     }
 }
 
-/* ========= Komponen kecil ========= */
+/* ====== Komponen kecil ====== */
+
 @Composable
 private fun FieldLabel(text: String) {
     Text(text, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+}
+
+/** Dua kartu gender “lebar sama” tanpa weight (pakai BoxWithConstraints) */
+@Composable
+private fun GenderRow(
+    selected: UiGender?,
+    onSelect: (UiGender) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
+        val spacing = 12.dp
+        val cardW = (maxWidth - spacing) / 2
+
+        Row(horizontalArrangement = Arrangement.spacedBy(spacing)) {
+            GenderCard(
+                text = "Wanita",
+                selected = selected == UiGender.Perempuan,
+                onClick = { onSelect(UiGender.Perempuan) },
+                modifier = Modifier.width(cardW)
+            )
+            GenderCard(
+                text = "Pria",
+                selected = selected == UiGender.LakiLaki,
+                onClick = { onSelect(UiGender.LakiLaki) },
+                modifier = Modifier.width(cardW)
+            )
+        }
+    }
 }
 
 @Composable
@@ -271,11 +248,12 @@ private fun GenderCard(
     val border = if (selected) Teal.copy(alpha = .35f) else ChipBorder
     Column(
         modifier = modifier
+            .height(104.dp)
             .clip(RoundedCornerShape(20.dp))
             .background(bg)
             .border(1.dp, border, RoundedCornerShape(20.dp))
             .clickable(onClick = onClick)
-            .padding(16.dp),
+            .padding(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
@@ -296,28 +274,99 @@ private fun GenderCard(
     }
 }
 
+/** Dua kolom “Umur & Provinsi” tanpa weight; province pakai ExposedDropdown */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun PillRow(
+private fun AgeProvinceRow(
+    age: String,
+    province: String,
+    onAgeChange: (String) -> Unit,
+    onProvincePick: () -> Unit,
+    provinces: List<String>,
+    expanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    onProvinceSelected: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
+        val spacing = 12.dp
+        val ageW = (maxWidth - spacing) * 0.33f
+        val provW = maxWidth - spacing - ageW
+
+        Row(horizontalArrangement = Arrangement.spacedBy(spacing)) {
+            Column(Modifier.width(ageW)) {
+                OutlinedTextField(
+                    value = age,
+                    onValueChange = { onAgeChange(it) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            Column(Modifier.width(provW)) {
+                ExposedDropdownMenuBox(
+                    expanded = expanded,
+                    onExpandedChange = onExpandedChange
+                ) {
+                    OutlinedTextField(
+                        value = province,
+                        onValueChange = {},
+                        readOnly = true,
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth(),
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                        }
+                    )
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { onExpandedChange(false) }
+                    ) {
+                        provinces.forEach { p ->
+                            DropdownMenuItem(
+                                text = { Text(p) },
+                                onClick = { onProvinceSelected(p) }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** Tiga pill fixed width, tanpa weight */
+@Composable
+private fun PillRowFixed(
     items: List<String>,
     selectedIndex: Int,
-    onSelected: (Int) -> Unit
+    onSelected: (Int) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-        items.forEachIndexed { i, label ->
-            val selected = i == selectedIndex
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(if (selected) ChipSelected else Color.White)
-                    .border(1.dp, ChipBorder, RoundedCornerShape(12.dp))
-                    .clickable { onSelected(i) }
-                    .padding(horizontal = 16.dp, vertical = 10.dp)
-            ) {
-                Text(
-                    label,
-                    color = if (selected) Teal else Color.Black.copy(alpha = .80f),
-                    fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
-                )
+    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
+        val spacing = 12.dp
+        val pillW = (maxWidth - spacing * (items.size - 1)) / items.size
+
+        Row(horizontalArrangement = Arrangement.spacedBy(spacing)) {
+            items.forEachIndexed { i, label ->
+                val selected = i == selectedIndex
+                Box(
+                    modifier = Modifier
+                        .width(pillW)
+                        .height(50.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(if (selected) ChipSelected else Color.White)
+                        .border(1.dp, ChipBorder, RoundedCornerShape(12.dp))
+                        .clickable { onSelected(i) }
+                        .padding(horizontal = 12.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        label,
+                        color = if (selected) Teal else Color.Black.copy(alpha = .80f),
+                        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
+                    )
+                }
             }
         }
     }
