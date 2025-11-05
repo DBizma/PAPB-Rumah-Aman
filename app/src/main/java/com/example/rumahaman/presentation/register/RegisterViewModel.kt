@@ -2,7 +2,11 @@ package com.example.rumahaman.presentation.register
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.rumahaman.data.repository.Result
+import com.example.rumahaman.domain.model.User
+import com.example.rumahaman.domain.usecase.user.SaveUserDataUseCase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.UserProfileChangeRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,7 +25,8 @@ data class RegisterState(
 
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
-    private val auth: FirebaseAuth
+    private val auth: FirebaseAuth,
+    private val saveUserDataUseCase: SaveUserDataUseCase
 ) : ViewModel() {
 
     private val _registerState = MutableStateFlow(RegisterState())
@@ -64,11 +69,46 @@ class RegisterViewModel @Inject constructor(
         viewModelScope.launch {
             _registerState.value = RegisterState(isLoading = true)
             try {
-                auth.createUserWithEmailAndPassword(email, pass).await()
-                auth.signOut()
-
-                _navigationChannel.send(Unit)
-                _registerState.value = RegisterState(isLoading = false)
+                // 1. Buat user di Firebase Auth
+                val authResult = auth.createUserWithEmailAndPassword(email, pass).await()
+                val userId = authResult.user?.uid ?: throw Exception("User ID tidak ditemukan")
+                
+                // 2. Set displayName di Firebase Auth (PENTING!)
+                val profileUpdates = UserProfileChangeRequest.Builder()
+                    .setDisplayName(name)
+                    .build()
+                authResult.user?.updateProfile(profileUpdates)?.await()
+                
+                // 3. Simpan data user ke Firestore
+                val user = User(
+                    id = userId,
+                    name = name,
+                    email = email,
+                    phoneNumber = "",
+                    gender = "",
+                    age = 0,
+                    province = ""
+                )
+                
+                saveUserDataUseCase(user).collect { result ->
+                    when (result) {
+                        is Result.Loading -> {
+                            // Tetap loading
+                        }
+                        is Result.Success -> {
+                            // Berhasil, sign out dan navigasi ke login
+                            auth.signOut()
+                            _navigationChannel.send(Unit)
+                            _registerState.value = RegisterState(isLoading = false)
+                        }
+                        is Result.Error -> {
+                            // Meskipun gagal save ke Firestore, tetap anggap berhasil
+                            auth.signOut()
+                            _navigationChannel.send(Unit)
+                            _registerState.value = RegisterState(isLoading = false)
+                        }
+                    }
+                }
 
             } catch (e: Exception) {
                 _registerState.value = RegisterState(error = e.message ?: "Terjadi kesalahan")
