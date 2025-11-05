@@ -4,10 +4,12 @@ import com.example.rumahaman.BuildConfig
 import com.example.rumahaman.data.remote.GroqApiService
 import com.example.rumahaman.data.repository.AuthRepositoryImpl
 import com.example.rumahaman.data.repository.ChatBotRepositoryImpl
+import com.example.rumahaman.data.repository.ChatHistoryRepositoryImpl
 import com.example.rumahaman.data.repository.TipsRepositoryImpl
 import com.example.rumahaman.data.repository.UserRepositoryImpl
 import com.example.rumahaman.domain.repository.AuthRepository
 import com.example.rumahaman.domain.repository.ChatBotRepository
+import com.example.rumahaman.domain.repository.ChatHistoryRepository
 import com.example.rumahaman.domain.repository.TipsRepository
 import com.example.rumahaman.domain.repository.UserRepository
 import com.google.firebase.auth.FirebaseAuth
@@ -29,44 +31,46 @@ import javax.inject.Singleton
 object AppModule {
 
     private const val GROQ_BASE_URL = "https://api.groq.com/"
-    // API Key dibaca dari BuildConfig (yang load dari local.properties)
-    private val GROQ_API_KEY: String
-        get() = BuildConfig.GROQ_API_KEY
 
-    // --- Provider untuk Firestore (sudah benar) ---
+    // --- Provider untuk Firestore ---
     @Provides
     @Singleton
     fun provideFirebaseFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
 
-    // --- Provider untuk TipsRepository (sudah benar) ---
+    // --- Provider untuk TipsRepository ---
     @Provides
     @Singleton
     fun provideTipsRepository(firestore: FirebaseFirestore): TipsRepository {
         return TipsRepositoryImpl(firestore)
     }
 
-    // --- PERBAIKAN DI SINI ---
-
-    // 2. Tambahkan provider untuk FirebaseAuth
+    // --- Provider untuk FirebaseAuth ---
     @Provides
     @Singleton
     fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
 
-    // 3. Terima FirebaseAuth sebagai parameter untuk membuat AuthRepositoryImpl
+    // --- Provider untuk AuthRepository ---
     @Provides
     @Singleton
     fun provideAuthRepository(firebaseAuth: FirebaseAuth): AuthRepository {
         return AuthRepositoryImpl(firebaseAuth)
     }
 
-    // 4. Provider untuk UserRepository
+    // --- Provider untuk UserRepository ---
     @Provides
     @Singleton
     fun provideUserRepository(firestore: FirebaseFirestore): UserRepository {
         return UserRepositoryImpl(firestore)
     }
 
-    // 5. Provider untuk OkHttpClient
+    // --- Provider untuk ChatHistoryRepository ---
+    @Provides
+    @Singleton
+    fun provideChatHistoryRepository(firestore: FirebaseFirestore): ChatHistoryRepository {
+        return ChatHistoryRepositoryImpl(firestore)
+    }
+
+    // --- Provider untuk OkHttpClient ---
     @Provides
     @Singleton
     fun provideOkHttpClient(): OkHttpClient {
@@ -82,7 +86,7 @@ object AppModule {
             .build()
     }
 
-    // 6. Provider untuk Retrofit
+    // --- Provider untuk Retrofit ---
     @Provides
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
@@ -93,20 +97,23 @@ object AppModule {
             .build()
     }
 
-    // 7. Provider untuk GroqApiService
+    // --- Provider untuk GroqApiService ---
     @Provides
     @Singleton
     fun provideGroqApiService(retrofit: Retrofit): GroqApiService {
         return retrofit.create(GroqApiService::class.java)
     }
 
-    // 8. Provider untuk Groq API Key
+    // --- Provider untuk Groq API Key (JAUH LEBIH SEDERHANA) ---
     @Provides
     @Singleton
     @Named("groqApiKey")
-    fun provideGroqApiKey(): String = GROQ_API_KEY
+    fun provideGroqApiKey(): String {
+        // Cukup akses dari BuildConfig yang sudah dibuat Gradle
+        return BuildConfig.GROQ_API_KEY
+    }
 
-    // 9. Provider untuk ChatBotRepository
+    // --- Provider untuk ChatBotRepository ---
     @Provides
     @Singleton
     fun provideChatBotRepository(
