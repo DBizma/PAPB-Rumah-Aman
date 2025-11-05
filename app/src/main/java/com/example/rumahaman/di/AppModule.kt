@@ -1,5 +1,6 @@
 package com.example.rumahaman.di
 
+import com.example.rumahaman.BuildConfig
 import com.example.rumahaman.data.remote.GroqApiService
 import com.example.rumahaman.data.repository.AuthRepositoryImpl
 import com.example.rumahaman.data.repository.ChatBotRepositoryImpl
@@ -21,7 +22,6 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.util.Properties
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
 import javax.inject.Singleton
@@ -31,78 +31,46 @@ import javax.inject.Singleton
 object AppModule {
 
     private const val GROQ_BASE_URL = "https://api.groq.com/"
-    
-    // API Key dengan fallback robust - baca dari BuildConfig atau local.properties
-    private val GROQ_API_KEY: String by lazy {
-        try {
-            // Coba baca dari BuildConfig (akan ter-generate setelah build)
-            val buildConfigClass = Class.forName("com.example.rumahaman.BuildConfig")
-            val field = buildConfigClass.getField("GROQ_API_KEY")
-            field.get(null) as? String ?: getApiKeyFromLocalProperties()
-        } catch (e: Exception) {
-            // Fallback: baca langsung dari local.properties
-            getApiKeyFromLocalProperties()
-        }
-    }
-    
-    private fun getApiKeyFromLocalProperties(): String {
-        return try {
-            val properties = Properties()
-            val rootDir = System.getProperty("user.dir") ?: ""
-            val localPropertiesFile = java.io.File(rootDir, "local.properties")
-            
-            if (localPropertiesFile.exists()) {
-                properties.load(localPropertiesFile.inputStream())
-                properties.getProperty("GROQ_API_KEY", "")
-            } else {
-                ""
-            }
-        } catch (e: Exception) {
-            ""
-        }
-    }
 
-    // --- Provider untuk Firestore (sudah benar) ---
+    // --- Provider untuk Firestore ---
     @Provides
     @Singleton
     fun provideFirebaseFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
 
-    // --- Provider untuk TipsRepository (sudah benar) ---
+    // --- Provider untuk TipsRepository ---
     @Provides
     @Singleton
     fun provideTipsRepository(firestore: FirebaseFirestore): TipsRepository {
         return TipsRepositoryImpl(firestore)
     }
 
-    // --- PERBAIKAN DI SINI ---
-
-    // 2. Tambahkan provider untuk FirebaseAuth
+    // --- Provider untuk FirebaseAuth ---
     @Provides
     @Singleton
     fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
 
-    // 3. Terima FirebaseAuth sebagai parameter untuk membuat AuthRepositoryImpl
+    // --- Provider untuk AuthRepository ---
     @Provides
     @Singleton
     fun provideAuthRepository(firebaseAuth: FirebaseAuth): AuthRepository {
         return AuthRepositoryImpl(firebaseAuth)
     }
 
-    // 4. Provider untuk UserRepository
+    // --- Provider untuk UserRepository ---
     @Provides
     @Singleton
     fun provideUserRepository(firestore: FirebaseFirestore): UserRepository {
         return UserRepositoryImpl(firestore)
     }
 
-    // 4b. Provider untuk ChatHistoryRepository
+    // --- Provider untuk ChatHistoryRepository ---
     @Provides
     @Singleton
     fun provideChatHistoryRepository(firestore: FirebaseFirestore): ChatHistoryRepository {
         return ChatHistoryRepositoryImpl(firestore)
     }
 
-    // 5. Provider untuk OkHttpClient
+    // --- Provider untuk OkHttpClient ---
     @Provides
     @Singleton
     fun provideOkHttpClient(): OkHttpClient {
@@ -118,7 +86,7 @@ object AppModule {
             .build()
     }
 
-    // 6. Provider untuk Retrofit
+    // --- Provider untuk Retrofit ---
     @Provides
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
@@ -129,20 +97,23 @@ object AppModule {
             .build()
     }
 
-    // 7. Provider untuk GroqApiService
+    // --- Provider untuk GroqApiService ---
     @Provides
     @Singleton
     fun provideGroqApiService(retrofit: Retrofit): GroqApiService {
         return retrofit.create(GroqApiService::class.java)
     }
 
-    // 8. Provider untuk Groq API Key
+    // --- Provider untuk Groq API Key (JAUH LEBIH SEDERHANA) ---
     @Provides
     @Singleton
     @Named("groqApiKey")
-    fun provideGroqApiKey(): String = GROQ_API_KEY
+    fun provideGroqApiKey(): String {
+        // Cukup akses dari BuildConfig yang sudah dibuat Gradle
+        return BuildConfig.GROQ_API_KEY
+    }
 
-    // 9. Provider untuk ChatBotRepository
+    // --- Provider untuk ChatBotRepository ---
     @Provides
     @Singleton
     fun provideChatBotRepository(

@@ -29,7 +29,7 @@ class ChatBotViewModel @Inject constructor(
         _uiState.update { it.copy(userName = userName) }
         
         // Pesan sambutan dari chatbot
-        addBotMessage("Haloo $userName")
+        addBotMessage("Halo $userName! Saya adalah chatbot konselor RumahAman. Ada yang bisa saya bantu?")
     }
 
     fun onInputTextChange(text: String) {
@@ -56,7 +56,7 @@ class ChatBotViewModel @Inject constructor(
             )
         }
 
-        // Kirim ke Gemini API
+        // Kirim ke Groq API
         viewModelScope.launch {
             sendMessageUseCase(messageText).collect { result ->
                 when (result) {
@@ -75,7 +75,7 @@ class ChatBotViewModel @Inject constructor(
                             )
                         }
                         // Tambahkan pesan error dari bot
-                        addBotMessage("Maaf, saya mengalami masalah teknis. Silakan coba lagi.")
+                        addBotMessage("Maaf, saya tidak dapat memproses pesan Anda saat ini. Silakan coba lagi.")
                     }
                 }
             }
@@ -93,5 +93,13 @@ class ChatBotViewModel @Inject constructor(
         _uiState.update {
             it.copy(messages = it.messages + botMessage)
         }
+    }
+    
+    fun clearChat() {
+        _uiState.update { it.copy(messages = emptyList()) }
+        
+        // Tampilkan pesan sambutan lagi
+        val userName = _uiState.value.userName
+        addBotMessage("Halo $userName! Saya adalah chatbot konselor RumahAman. Ada yang bisa saya bantu?")
     }
 }
