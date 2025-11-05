@@ -2,10 +2,15 @@ package com.example.rumahaman.presentation.navigation
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.rumahaman.navigation.Routes
+import com.example.rumahaman.presentation.dashboard.DashboardScreen
+import com.example.rumahaman.presentation.notification.NotificationScreen
+import com.example.rumahaman.presentation.settings.SettingsScreen
 
 @Composable
 fun MainScreenNavGraph(navController: NavHostController) {
@@ -14,16 +19,20 @@ fun MainScreenNavGraph(navController: NavHostController) {
         startDestination = Routes.DASHBOARD
     ) {
         composable(Routes.DASHBOARD) {
-            // Ganti dengan Composable HomeScreen Anda
-            Text("Ini adalah Home Screen")
+            // Panggil Composable HomeScreen Anda
+            DashboardScreen()
         }
         composable(Routes.NOTIFICATION_SCREEN) {
-            // Ganti dengan Composable ProfileScreen Anda
-            Text("Ini adalah Notification Screen")
+            // Panggil Composable NotificationScreen Anda
+            NotificationScreen()
         }
         composable(Routes.SETTINGS_SCREEN) {
-            // Ganti dengan Composable SettingsScreen Anda
-            Text("Ini adalah Settings Screen")
+            // Panggil Composable SettingsScreen Anda
+            SettingsScreen()
         }
     }
 }
+
+
+
+

@@ -9,7 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.rumahaman.presentation.dashboard.Dashboard
+import com.example.rumahaman.presentation.dashboard.DashboardScreen
 import com.example.rumahaman.presentation.halamanAwal.HalamanAwalScreen
 import com.example.rumahaman.presentation.login.LoginScreen
 import com.example.rumahaman.presentation.register.RegisterScreen
