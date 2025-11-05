@@ -1,99 +1,67 @@
 package com.example.rumahaman.presentation.recommendation
 
-
-
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Call
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.foundation.layout.weight // ← penting untuk Modifier.weight
 
-// -----------------------------
-// UI Model (UI-only; tanpa domain)
-// -----------------------------
-enum class Gender { LakiLaki, Perempuan }
-enum class ViolenceType { Fisik, Mental, Keduanya }
-enum class ServiceType { Psikologis, Hukum, Sosial, Medis, Shelter }
+/* ========= Warna ========= */
+private val Mint = Color(0xFFE8F3EF)
+private val Teal = Color(0xFF2F7E83)
+private val ChipSelected = Color(0xFFD9ECE7)
+private val ChipBorder = Color(0xFFCCD6D2)
+private val OrangeDot = Color(0xFFFFA76B)
 
-data class RecommendationFilters(
-    val gender: Gender? = null,
-    val age: String = "",
-    val province: String = "",
-    val violenceType: ViolenceType? = null,
-    val serviceType: ServiceType? = null
+/* ========= Model UI ========= */
+enum class UiGender { Perempuan, LakiLaki }
+enum class UiViolence { Fisik, Verbal, FisikDanVerbal }
+enum class UiService { Psikologis, Hukum, PsikologisDanHukum }
+
+data class RecFormState(
+    val name: String = "Margaretha",
+    val gender: UiGender? = UiGender.Perempuan,
+    val age: String = "20",
+    val province: String = "Jawa Timur",
+    val violence: UiViolence? = UiViolence.Verbal,
+    val service: UiService? = UiService.Psikologis
 )
 
-data class RecommendationCardUI(
-    val id: String,
-    val serviceName: String,
-    val serviceType: ServiceType,
-    val province: String,
-    val description: String,
-    val contactLink: String
-)
-
-// -----------------------------
-// Screen Root
-// -----------------------------
+/* ========= Screen ========= */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecommendationScreen(
-    onBack: (() -> Unit)? = null
+    onBack: (() -> Unit)? = null,
+    onSubmit: (RecFormState) -> Unit = {}
 ) {
-    var filters by remember { mutableStateOf(RecommendationFilters()) }
-    var showResults by remember { mutableStateOf(false) }
-
-    // Dummy data untuk tampilan hasil (UI saja)
-    val dummyResults = remember {
-        listOf(
-            RecommendationCardUI(
-                id = "1",
-                serviceName = "Layanan Konseling Sehat Jiwa",
-                serviceType = ServiceType.Psikologis,
-                province = "Jawa Timur",
-                description = "Konseling gratis dan rujukan psikolog untuk kasus kekerasan.",
-                contactLink = "https://bit.ly/konseling-sehat"
-            ),
-            RecommendationCardUI(
-                id = "2",
-                serviceName = "Bantuan Hukum Perempuan & Anak",
-                serviceType = ServiceType.Hukum,
-                province = "Jawa Timur",
-                description = "Pendampingan hukum, pelaporan, dan advokasi darurat.",
-                contactLink = "https://bit.ly/bantuan-hukum"
-            ),
-            RecommendationCardUI(
-                id = "3",
-                serviceName = "Pusat Layanan Terpadu (Shelter)",
-                serviceType = ServiceType.Shelter,
-                province = "Jawa Barat",
-                description = "Tempat aman sementara, rujukan medis, dan konseling.",
-                contactLink = "https://bit.ly/shelter-aman"
-            )
-        )
-    }
+    var state by remember { mutableStateOf(RecFormState()) }
+    val provinces = listOf("Jawa Timur","Jawa Tengah","Jawa Barat","DKI Jakarta","DIY","Bali")
+    var provinceExpanded by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Sistem Rekomendasi") },
+                title = {},
                 navigationIcon = {
                     if (onBack != null) {
                         IconButton(onClick = onBack) {
@@ -104,340 +72,259 @@ fun RecommendationScreen(
             )
         }
     ) { padding ->
-        Crossfade(
-            targetState = showResults,
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-        ) { isResult ->
-            if (isResult) {
-                RecommendationResultList(
-                    filters = filters,
-                    results = dummyResults.filter { item ->
-                        (filters.province.isBlank() || item.province == filters.province) &&
-                                (filters.serviceType == null || item.serviceType == filters.serviceType)
-                    },
-                    onChangeFilter = { showResults = false }
-                )
-            } else {
-                RecommendationForm(
-                    filters = filters,
-                    onFiltersChange = { filters = it },
-                    onSubmit = {
-                        // Validasi minimal (UI)
-                        val ok = filters.gender != null &&
-                                filters.age.toIntOrNull() != null &&
-                                filters.province.isNotBlank() &&
-                                filters.violenceType != null &&
-                                filters.serviceType != null
-                        if (ok) showResults = true
-                    }
-                )
-            }
-        }
-    }
-}
-
-// -----------------------------
-// Form Filter
-// -----------------------------
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun RecommendationForm(
-    filters: RecommendationFilters,
-    onFiltersChange: (RecommendationFilters) -> Unit,
-    onSubmit: () -> Unit
-) {
-    val focus = LocalFocusManager.current
-    val provinces = listOf(
-        "Jawa Timur", "Jawa Tengah", "Jawa Barat", "DKI Jakarta",
-        "DI Yogyakarta", "Bali", "Sumatera Utara"
-    )
-
-    var provinceExpanded by remember { mutableStateOf(false) }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        // Header teks
-        Text(
-            text = "Isi data berikut untuk menampilkan layanan yang sesuai.",
-            style = MaterialTheme.typography.bodyMedium
-        )
-
-        // Gender
-        Text("Jenis Kelamin", style = MaterialTheme.typography.titleSmall)
-        FlowChipsRow(
-            options = listOf("Laki-laki", "Perempuan"),
-            selectedIndex = when (filters.gender) {
-                Gender.LakiLaki -> 0
-                Gender.Perempuan -> 1
-                else -> -1
-            },
-            onSelected = {
-                onFiltersChange(filters.copy(gender = if (it == 0) Gender.LakiLaki else Gender.Perempuan))
-            }
-        )
-
-        // Umur
-        OutlinedTextField(
-            value = filters.age,
-            onValueChange = { onFiltersChange(filters.copy(age = it.take(3).filter { c -> c.isDigit() })) },
-            label = { Text("Umur") },
-            placeholder = { Text("Contoh: 21") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        // Provinsi
-        ExposedDropdownMenuBox(
-            expanded = provinceExpanded,
-            onExpandedChange = { provinceExpanded = it },
-            modifier = Modifier.fillMaxWidth()
+                .padding(horizontal = 20.dp)
         ) {
-            OutlinedTextField(
-                value = filters.province,
-                onValueChange = { /* read-only via menu */ },
-                readOnly = true,
-                label = { Text("Provinsi") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = provinceExpanded) },
+            // Header ilustrasi bundar
+            Box(
                 modifier = Modifier
-                    .menuAnchor()
-                    .fillMaxWidth()
-            )
-            ExposedDropdownMenu(
-                expanded = provinceExpanded,
-                onDismissRequest = { provinceExpanded = false }
+                    .align(Alignment.CenterHorizontally)
+                    .size(96.dp)
+                    .clip(CircleShape)
+                    .background(Mint),
+                contentAlignment = Alignment.Center
             ) {
-                provinces.forEach { prov ->
-                    DropdownMenuItem(
-                        text = { Text(prov) },
-                        onClick = {
-                            onFiltersChange(filters.copy(province = prov))
-                            provinceExpanded = false
-                            focus.clearFocus()
-                        }
+                Icon(Icons.Default.Person, contentDescription = null, tint = Teal, modifier = Modifier.size(42.dp))
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .offset(x = 6.dp, y = (-6).dp)
+                        .size(12.dp)
+                        .clip(CircleShape)
+                        .background(OrangeDot)
+                )
+            }
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "SISTEM REKOMENDASI",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                color = Teal
+            )
+            Spacer(Modifier.height(12.dp))
+
+            Surface(
+                color = Mint,
+                shape = RoundedCornerShape(24.dp),
+                tonalElevation = 0.dp,
+                shadowElevation = 2.dp,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+
+                    // Nama (read-only)
+                    FieldLabel("Nama:")
+                    OutlinedTextField(
+                        value = state.name,
+                        onValueChange = {},
+                        readOnly = true,
+                        enabled = false,
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
                     )
-                }
-            }
-        }
 
-        // Jenis Kekerasan
-        Text("Jenis Kekerasan", style = MaterialTheme.typography.titleSmall)
-        FlowChipsRow(
-            options = listOf("Fisik", "Mental", "Keduanya"),
-            selectedIndex = when (filters.violenceType) {
-                ViolenceType.Fisik -> 0
-                ViolenceType.Mental -> 1
-                ViolenceType.Keduanya -> 2
-                else -> -1
-            },
-            onSelected = {
-                val v = when (it) {
-                    0 -> ViolenceType.Fisik
-                    1 -> ViolenceType.Mental
-                    else -> ViolenceType.Keduanya
-                }
-                onFiltersChange(filters.copy(violenceType = v))
-            }
-        )
+                    // Gender (2 kartu dengan weight)
+                    FieldLabel("Jenis Kelamin:")
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        GenderCard(
+                            text = "Wanita",
+                            selected = state.gender == UiGender.Perempuan,
+                            onClick = { state = state.copy(gender = UiGender.Perempuan) },
+                            modifier = Modifier.weight(1f)
+                        )
+                        GenderCard(
+                            text = "Pria",
+                            selected = state.gender == UiGender.LakiLaki,
+                            onClick = { state = state.copy(gender = UiGender.LakiLaki) },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
 
-        // Bidang Layanan
-        Text("Bidang Layanan", style = MaterialTheme.typography.titleSmall)
-        FlowChipsRow(
-            options = listOf("Psikologis", "Hukum", "Sosial", "Medis", "Shelter"),
-            selectedIndex = when (filters.serviceType) {
-                ServiceType.Psikologis -> 0
-                ServiceType.Hukum -> 1
-                ServiceType.Sosial -> 2
-                ServiceType.Medis -> 3
-                ServiceType.Shelter -> 4
-                else -> -1
-            },
-            onSelected = {
-                val s = when (it) {
-                    0 -> ServiceType.Psikologis
-                    1 -> ServiceType.Hukum
-                    2 -> ServiceType.Sosial
-                    3 -> ServiceType.Medis
-                    else -> ServiceType.Shelter
-                }
-                onFiltersChange(filters.copy(serviceType = s))
-            }
-        )
+                    // Umur & Provinsi (2 kolom)
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            FieldLabel("Umur:")
+                            OutlinedTextField(
+                                value = state.age,
+                                onValueChange = { state = state.copy(age = it.filter(Char::isDigit).take(3)) },
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            FieldLabel("Provinsi:")
+                            ExposedDropdownMenuBox(
+                                expanded = provinceExpanded,
+                                onExpandedChange = { provinceExpanded = it },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                OutlinedTextField(
+                                    value = state.province,
+                                    onValueChange = {},
+                                    readOnly = true,
+                                    modifier = Modifier
+                                        .menuAnchor()
+                                        .fillMaxWidth(),
+                                    trailingIcon = {
+                                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = provinceExpanded)
+                                    }
+                                )
+                                ExposedDropdownMenu(
+                                    expanded = provinceExpanded,
+                                    onDismissRequest = { provinceExpanded = false }
+                                ) {
+                                    provinces.forEach { p ->
+                                        DropdownMenuItem(
+                                            text = { Text(p) },
+                                            onClick = {
+                                                state = state.copy(province = p)
+                                                provinceExpanded = false
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
 
-        // Tombol Cari
-        Button(
-            onClick = {
-                focus.clearFocus()
-                onSubmit()
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp)
-        ) {
-            Text("Cari Bantuan")
-        }
+                    // Jenis kekerasan
+                    FieldLabel("Jenis kekerasan seksual yang didapatkan:")
+                    PillRow(
+                        items = listOf("Fisik","Verbal","Fisik & Verbal"),
+                        selectedIndex = when (state.violence) {
+                            UiViolence.Fisik -> 0
+                            UiViolence.Verbal -> 1
+                            UiViolence.FisikDanVerbal -> 2
+                            else -> -1
+                        }
+                    ) { idx ->
+                        state = state.copy(
+                            violence = when (idx) {
+                                0 -> UiViolence.Fisik
+                                1 -> UiViolence.Verbal
+                                else -> UiViolence.FisikDanVerbal
+                            }
+                        )
+                    }
 
-        // Hint
-        AssistChip(
-            onClick = {},
-            label = { Text("Tips: Isi semua kolom untuk hasil yang lebih akurat") },
-            leadingIcon = {
-                Icon(
-                    Icons.Default.Info,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-        )
+                    // Bidang layanan
+                    FieldLabel("Anda membutuhkan pelayanan di bidang:")
+                    PillRow(
+                        items = listOf("Psikologi","Hukum","Psikologis & Hukum"),
+                        selectedIndex = when (state.service) {
+                            UiService.Psikologis -> 0
+                            UiService.Hukum -> 1
+                            UiService.PsikologisDanHukum -> 2
+                            else -> -1
+                        }
+                    ) { idx ->
+                        state = state.copy(
+                            service = when (idx) {
+                                0 -> UiService.Psikologis
+                                1 -> UiService.Hukum
+                                else -> UiService.PsikologisDanHukum
+                            }
+                        )
+                    }
 
-        Spacer(modifier = Modifier.height(32.dp))
-    }
-}
-
-// -----------------------------
-// Hasil Rekomendasi (List)
-// -----------------------------
-@Composable
-private fun RecommendationResultList(
-    filters: RecommendationFilters,
-    results: List<RecommendationCardUI>,
-    onChangeFilter: () -> Unit
-) {
-    Column(modifier = Modifier.fillMaxSize()) {
-        // Ringkasan filter
-        Surface(
-            color = MaterialTheme.colorScheme.surfaceVariant,
-            tonalElevation = 1.dp
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text("Hasil Rekomendasi", style = MaterialTheme.typography.titleMedium)
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    text = buildString {
-                        append("Provinsi: ${filters.province.ifBlank { "-" }} • ")
-                        append("Layanan: ${filters.serviceType?.name ?: "-"} • ")
-                        append("Jenis: ${filters.violenceType?.name ?: "-"}")
-                    },
-                    style = MaterialTheme.typography.bodySmall
-                )
-                Spacer(Modifier.height(8.dp))
-                OutlinedButton(onClick = onChangeFilter) {
-                    Text("Ubah Filter")
-                }
-            }
-        }
-
-        // Daftar kartu
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            if (results.isEmpty()) {
-                item {
-                    Box(
+                    // Tombol submit
+                    Button(
+                        onClick = { onSubmit(state) },
+                        colors = ButtonDefaults.buttonColors(containerColor = Teal),
+                        shape = RoundedCornerShape(14.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 48.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("Tidak ada layanan yang cocok dengan filter.")
-                    }
-                }
-            } else {
-                items(results, key = { it.id }) { item ->
-                    RecommendationCard(item)
+                            .height(54.dp)
+                    ) { Text("Tampilkan Rekomendasi") }
                 }
             }
         }
     }
 }
 
+/* ========= Komponen kecil ========= */
 @Composable
-private fun RecommendationCard(item: RecommendationCardUI) {
-    ElevatedCard(
-        modifier = Modifier.fillMaxWidth()
+private fun FieldLabel(text: String) {
+    Text(text, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+}
+
+@Composable
+private fun GenderCard(
+    text: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val bg = if (selected) Color.White else Color(0xFFF2F5F4)
+    val border = if (selected) Teal.copy(alpha = .35f) else ChipBorder
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(20.dp))
+            .background(bg)
+            .border(1.dp, border, RoundedCornerShape(20.dp))
+            .clickable(onClick = onClick)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = item.serviceName,
-                style = MaterialTheme.typography.titleMedium,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
-            Spacer(Modifier.height(6.dp))
-            AssistChip(
-                onClick = {},
-                label = { Text(item.serviceType.name) }
-            )
-            Spacer(Modifier.height(6.dp))
-            Text(
-                text = item.description,
-                style = MaterialTheme.typography.bodyMedium,
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis
-            )
-            Spacer(Modifier.height(10.dp))
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                FilledTonalButton(onClick = { /* open link */ }) {
-                    Icon(Icons.Default.Link, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text("Buka Link")
-                }
-                OutlinedButton(onClick = { /* call / share */ }) {
-                    Icon(Icons.Default.Call, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text("Kontak")
-                }
-            }
+        Box(
+            modifier = Modifier
+                .size(56.dp)
+                .clip(CircleShape)
+                .background(Color(0xFFDDEBE8)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(Icons.Default.Person, contentDescription = null, tint = Teal)
         }
+        Spacer(Modifier.height(6.dp))
+        Text(
+            text,
+            color = if (selected) Teal else Color.Black.copy(alpha = .75f),
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
+        )
     }
 }
 
-// -----------------------------
-// Util: Row of single-select FilterChips
-// -----------------------------
 @Composable
-private fun FlowChipsRow(
-    options: List<String>,
+private fun PillRow(
+    items: List<String>,
     selectedIndex: Int,
     onSelected: (Int) -> Unit
 ) {
-    // Simple responsive wrap using FlowRow substitute
-    // (Tanpa dependency Accompanist; gunakan Rows berulang)
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        var row = mutableListOf<Int>()
-        // Render semua sebagai satu baris; jika mau wrap kompleks, gunakan FlowRow Accompanist.
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            options.forEachIndexed { index, label ->
-                FilterChip(
-                    selected = index == selectedIndex,
-                    onClick = { onSelected(index) },
-                    label = { Text(label) }
+    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+        items.forEachIndexed { i, label ->
+            val selected = i == selectedIndex
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(if (selected) ChipSelected else Color.White)
+                    .border(1.dp, ChipBorder, RoundedCornerShape(12.dp))
+                    .clickable { onSelected(i) }
+                    .padding(horizontal = 16.dp, vertical = 10.dp)
+            ) {
+                Text(
+                    label,
+                    color = if (selected) Teal else Color.Black.copy(alpha = .80f),
+                    fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
                 )
             }
         }
     }
 }
 
-// -----------------------------
-// Preview
-// -----------------------------
 @Preview(showBackground = true)
 @Composable
-private fun RecommendationFormPreview() {
-    MaterialTheme {
-        RecommendationScreen()
-    }
+private fun RecommendationScreenPreview() {
+    MaterialTheme { RecommendationScreen() }
 }

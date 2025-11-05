@@ -52,12 +52,13 @@ dependencies {
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     implementation("io.coil-kt:coil-compose:2.6.0")
     implementation("io.coil-kt:coil-svg:2.6.0")
-    implementation("androidx.compose.material:material-icons-extended:1.5.0")
+    implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.navigation:navigation-compose:2.8.3")
     implementation("com.google.accompanist:accompanist-navigation-animation:0.36.0")
     implementation("androidx.core:core-splashscreen:1.0.1") // Atau versi terbaru
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
     implementation("androidx.datastore:datastore-preferences:1.1.1")
+    implementation("androidx.compose.foundation:foundation")
 
 
     implementation(libs.androidx.core.ktx)
