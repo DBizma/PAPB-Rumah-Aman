@@ -1,13 +1,14 @@
 package com.example.rumahaman.di
 
-import com.example.rumahaman.BuildConfig
 import com.example.rumahaman.data.remote.GroqApiService
 import com.example.rumahaman.data.repository.AuthRepositoryImpl
 import com.example.rumahaman.data.repository.ChatBotRepositoryImpl
+import com.example.rumahaman.data.repository.ChatHistoryRepositoryImpl
 import com.example.rumahaman.data.repository.TipsRepositoryImpl
 import com.example.rumahaman.data.repository.UserRepositoryImpl
 import com.example.rumahaman.domain.repository.AuthRepository
 import com.example.rumahaman.domain.repository.ChatBotRepository
+import com.example.rumahaman.domain.repository.ChatHistoryRepository
 import com.example.rumahaman.domain.repository.TipsRepository
 import com.example.rumahaman.domain.repository.UserRepository
 import com.google.firebase.auth.FirebaseAuth
@@ -20,6 +21,7 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.Properties
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
 import javax.inject.Singleton
@@ -29,9 +31,36 @@ import javax.inject.Singleton
 object AppModule {
 
     private const val GROQ_BASE_URL = "https://api.groq.com/"
-    // API Key dibaca dari BuildConfig (yang load dari local.properties)
-    private val GROQ_API_KEY: String
-        get() = BuildConfig.GROQ_API_KEY
+    
+    // API Key dengan fallback robust - baca dari BuildConfig atau local.properties
+    private val GROQ_API_KEY: String by lazy {
+        try {
+            // Coba baca dari BuildConfig (akan ter-generate setelah build)
+            val buildConfigClass = Class.forName("com.example.rumahaman.BuildConfig")
+            val field = buildConfigClass.getField("GROQ_API_KEY")
+            field.get(null) as? String ?: getApiKeyFromLocalProperties()
+        } catch (e: Exception) {
+            // Fallback: baca langsung dari local.properties
+            getApiKeyFromLocalProperties()
+        }
+    }
+    
+    private fun getApiKeyFromLocalProperties(): String {
+        return try {
+            val properties = Properties()
+            val rootDir = System.getProperty("user.dir") ?: ""
+            val localPropertiesFile = java.io.File(rootDir, "local.properties")
+            
+            if (localPropertiesFile.exists()) {
+                properties.load(localPropertiesFile.inputStream())
+                properties.getProperty("GROQ_API_KEY", "")
+            } else {
+                ""
+            }
+        } catch (e: Exception) {
+            ""
+        }
+    }
 
     // --- Provider untuk Firestore (sudah benar) ---
     @Provides
@@ -64,6 +93,13 @@ object AppModule {
     @Singleton
     fun provideUserRepository(firestore: FirebaseFirestore): UserRepository {
         return UserRepositoryImpl(firestore)
+    }
+
+    // 4b. Provider untuk ChatHistoryRepository
+    @Provides
+    @Singleton
+    fun provideChatHistoryRepository(firestore: FirebaseFirestore): ChatHistoryRepository {
+        return ChatHistoryRepositoryImpl(firestore)
     }
 
     // 5. Provider untuk OkHttpClient
