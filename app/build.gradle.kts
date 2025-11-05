@@ -49,6 +49,7 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-messaging")
     implementation("com.google.dagger:hilt-android:2.51.1")
+    implementation(libs.material3)
     kapt("com.google.dagger:hilt-android-compiler:2.51.1")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     implementation("io.coil-kt:coil-compose:2.6.0")
@@ -60,6 +61,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
     implementation("androidx.datastore:datastore-preferences:1.1.1")
     implementation("androidx.compose.foundation:foundation")
+
 
 
     implementation(libs.androidx.core.ktx)
