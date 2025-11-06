@@ -9,13 +9,16 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController // <-- Import rememberNavController
 import com.example.rumahaman.presentation.navigation.BottomNavigationBar
 import com.example.rumahaman.presentation.navigation.MainScreenNavGraph // <-- Import MainScreenNavGraph
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun MainScreen() { // <-- Parameter navController sudah benar dihapus
+fun MainScreen(
+    rootNavController: NavHostController // <-- Tambahkan parameter untuk NavController utama
+) {
     // 1. Buat NavController BARU, khusus untuk navigasi di dalam MainScreen.
     val mainNavController = rememberNavController()
 
@@ -37,8 +40,11 @@ fun MainScreen() { // <-- Parameter navController sudah benar dihapus
         }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
-            // 4. Tampilkan NavGraph internal. Ini sudah benar.
-            MainScreenNavGraph(navController = mainNavController)
+            // 4. Tampilkan NavGraph internal dengan pass rootNavController juga
+            MainScreenNavGraph(
+                navController = mainNavController,
+                rootNavController = rootNavController
+            )
         }
     }
 }

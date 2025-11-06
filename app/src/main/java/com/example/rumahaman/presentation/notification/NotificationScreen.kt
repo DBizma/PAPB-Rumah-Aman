@@ -1,5 +1,7 @@
 package com.example.rumahaman.presentation.notification
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -32,6 +34,7 @@ import java.time.format.FormatStyle
 import java.util.*
 
 // Helper function untuk format tanggal
+@RequiresApi(Build.VERSION_CODES.O)
 fun formatDateHeader(date: LocalDate): String {
     val today = LocalDate.now()
     val yesterday = today.minusDays(1)
@@ -46,6 +49,7 @@ fun formatDateHeader(date: LocalDate): String {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun NotificationScreen(
@@ -129,6 +133,7 @@ fun NotificationScreen(
 }
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview(showBackground = true)
 @Composable
 fun NotificationScreenPreview() {

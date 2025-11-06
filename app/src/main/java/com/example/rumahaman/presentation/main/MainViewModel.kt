@@ -26,26 +26,32 @@ class MainViewModel @Inject constructor(
 
     private fun listenForNewNotifications() {
         viewModelScope.launch {
-            // Gabungkan Flow tips terbaru dengan Flow timestamp terakhir dilihat
-            combine(
-                tipsRepository.getTipsStream(),
-                userPrefsRepository.lastNotificationViewTimestampFlow
-            ) { latestTips, lastViewTimestamp ->
-                // Blok ini akan berjalan setiap kali 'latestTips' ATAU 'lastViewTimestamp' berubah.
+            try {
+                // Gabungkan Flow tips terbaru dengan Flow timestamp terakhir dilihat
+                combine(
+                    tipsRepository.getTipsStream(),
+                    userPrefsRepository.lastNotificationViewTimestampFlow
+                ) { latestTips, lastViewTimestamp ->
+                    // Blok ini akan berjalan setiap kali 'latestTips' ATAU 'lastViewTimestamp' berubah.
 
-                if (latestTips.isNotEmpty()) {
-                    val latestTipTimestamp = latestTips.first().createdAt?.time ?: 0L
+                    if (latestTips.isNotEmpty()) {
+                        val latestTipTimestamp = latestTips.first().createdAt?.time ?: 0L
 
-                    // Lakukan perbandingan dan kembalikan hasilnya (Boolean)
-                    latestTipTimestamp > lastViewTimestamp
-                } else {
-                    // Jika tidak ada tips, tidak ada notifikasi baru
-                    false
+                        // Lakukan perbandingan dan kembalikan hasilnya (Boolean)
+                        latestTipTimestamp > lastViewTimestamp
+                    } else {
+                        // Jika tidak ada tips, tidak ada notifikasi baru
+                        false
+                    }
+                }.collect { hasNew ->
+                    // Hasil boolean dari combine akan dikirim ke sini.
+                    // Update state yang akan diobservasi oleh UI.
+                    _hasNewNotifications.value = hasNew
                 }
-            }.collect { hasNew ->
-                // Hasil boolean dari combine akan dikirim ke sini.
-                // Update state yang akan diobservasi oleh UI.
-                _hasNewNotifications.value = hasNew
+            } catch (e: Exception) {
+                // Tangkap error Firestore permission atau lainnya
+                // Tidak perlu crash, cukup set notifikasi jadi false
+                _hasNewNotifications.value = false
             }
         }
     }
