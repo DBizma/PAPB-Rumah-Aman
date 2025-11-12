@@ -6,15 +6,17 @@
 .gradle/
 build/
 */build/
+buildSrc/build/
 
 # Local configuration
 local.properties
-.gradle/
-.gradle/*
 
 # IntelliJ / Android Studio
 .idea/
 *.iml
+.idea/*
+*.ipr
+*.iws
 
 # Keystore files (jangan commit file sensitif)
 *.jks
@@ -23,6 +25,7 @@ local.properties
 # OS generated files
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # NDK / Native
 .externalNativeBuild/
@@ -33,6 +36,122 @@ captures/
 
 # Firebase
 google-services.json
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
 
 # Misc
 *.log
+
+# ======================
+# Node.js (Firebase Functions)
+# ======================
+
+# Dependencies
+node_modules/
+functions/node_modules/
+**/node_modules/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Lock files (optional - bisa di-commit jika mau konsistensi versi)
+# package-lock.json
+# yarn.lock
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# npm cache
+.npm
+.eslintcache
+
+# ======================
+# Build outputs
+# ======================
+
+# APK files
+*.apk
+*.ap_
+*.aab
+
+# DEX files
+*.dex
+
+# Class files
+*.class
+bin/
+gen/
+
+# Proguard
+proguard/
+
+# ======================
+# IDE & Editors
+# ======================
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+
+# ======================
+# Testing & Coverage
+# ======================
+
+# Test results
+test-results/
+*.test
+coverage/
+.nyc_output/
+
+# ======================
+# Kotlin & Java
+# ======================
+
+# Compiled class files
+out/
+target/
+
+# ======================
+# Temporary files
+# ======================
+
+# Backup files
+*.bak
+*.tmp
+*.temp
+
+# ======================
+# Firebase Deployment
+# ======================
+
+.firebase/
+.firebaserc
+
+# ======================
+# Android Lint
+# ======================
+
+lint/
+*.lint
+
+# ======================
+# Exclude development/debug files
+# ======================
+
+# Development seeder files (yang sudah di-disable)
+**/*.disabled
