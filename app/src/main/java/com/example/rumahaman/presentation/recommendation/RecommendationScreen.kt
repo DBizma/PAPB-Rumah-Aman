@@ -13,18 +13,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,6 +28,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 
 private val TealPrimary = Color(0xFF2E7D84)
 private val FormBackground = Color(0x57AAE2DB)
@@ -44,57 +38,94 @@ private enum class Gender { Female, Male }
 private enum class ViolenceType { Physical, Verbal, Both }
 private enum class ServiceType { Psychology, Law, Both }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecommendationScreen(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit = {},
-    onShowRecommendationClick: () -> Unit = {}
+    onNavigateToResult: () -> Unit = {},
+    viewModel: RecommendationViewModel = hiltViewModel()
 ) {
-    var selectedGender by remember { mutableStateOf(Gender.Female) }
-    var selectedViolence by remember { mutableStateOf(ViolenceType.Verbal) }
-    var selectedService by remember { mutableStateOf(ServiceType.Psychology) }
+    val uiState by viewModel.uiState.collectAsState()
+    
+    // Navigate to result when recommendation is loaded
+    LaunchedEffect(uiState.recommendation) {
+        if (uiState.recommendation != null) {
+            onNavigateToResult()
+        }
+    }
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(Color.White)
-    ) {
-        // Background hijau muda di bagian bawah
+    // Show loading dialog
+    if (uiState.isLoading) {
+        AlertDialog(
+            onDismissRequest = { },
+            title = { Text("Mencari Rekomendasi") },
+            text = { 
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            },
+            confirmButton = { }
+        )
+    }
+
+    // Show error dialog
+    uiState.error?.let { error ->
+        AlertDialog(
+            onDismissRequest = { viewModel.clearRecommendation() },
+            title = { Text("Error") },
+            text = { Text(error) },
+            confirmButton = {
+                TextButton(onClick = { viewModel.clearRecommendation() }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Kembali"
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+            )
+        },
+        containerColor = Color.White
+    ) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 253.dp)
-                .clip(RoundedCornerShape(topStart = 70.dp))
-                .background(FormBackground)
-        )
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp, vertical = 16.dp)
         ) {
-            // 🔹 Header atas
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                IconButton(onClick = onBackClick) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Kembali"
-                    )
-                }
-                Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    text = "19:02",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
+            // Background hijau muda di bagian bawah
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 280.dp)
+                    .clip(RoundedCornerShape(topStart = 70.dp))
+                    .background(FormBackground)
+                    .height(700.dp)
+            )
 
-            Spacer(modifier = Modifier.height(8.dp))
-            HeaderSection()
-            Spacer(modifier = Modifier.height(24.dp))
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(paddingValues)
+                    .padding(horizontal = 24.dp)
+            ) {
+                HeaderSection()
+                Spacer(modifier = Modifier.height(24.dp))
 
             // 🔹 Bagian form dibungkus Box agar rapi
             Box(
@@ -114,9 +145,18 @@ fun RecommendationScreen(
                         letterSpacing = (-0.32).sp
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    FieldBox(
-                        text = "Margaretha",
-                        modifier = Modifier.fillMaxWidth()
+                    OutlinedTextField(
+                        value = uiState.name,
+                        onValueChange = { viewModel.updateName(it) },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedContainerColor = FieldBackground,
+                            focusedContainerColor = FieldBackground,
+                            unfocusedBorderColor = Color.Transparent,
+                            focusedBorderColor = TealPrimary
+                        ),
+                        placeholder = { Text("Masukkan nama Anda") }
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -137,16 +177,16 @@ fun RecommendationScreen(
                         GenderCard(
                             label = "Wanita",
                             imageRes = R.drawable.perempuan_sistemrekomendasi,
-                            selected = selectedGender == Gender.Female,
+                            selected = uiState.gender == "Perempuan",
                             modifier = Modifier.weight(1f),
-                            onClick = { selectedGender = Gender.Female }
+                            onClick = { viewModel.updateGender("Perempuan") }
                         )
                         GenderCard(
                             label = "Pria",
                             imageRes = R.drawable.laki2_sistemrekomendasi,
-                            selected = selectedGender == Gender.Male,
+                            selected = uiState.gender == "Laki-laki",
                             modifier = Modifier.weight(1f),
-                            onClick = { selectedGender = Gender.Male }
+                            onClick = { viewModel.updateGender("Laki-laki") }
                         )
                     }
 
@@ -165,9 +205,18 @@ fun RecommendationScreen(
                                 letterSpacing = (-0.32).sp
                             )
                             Spacer(modifier = Modifier.height(8.dp))
-                            FieldBox(
-                                text = "20",
-                                modifier = Modifier.fillMaxWidth()
+                            OutlinedTextField(
+                                value = uiState.age,
+                                onValueChange = { viewModel.updateAge(it) },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(10.dp),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    unfocusedContainerColor = FieldBackground,
+                                    focusedContainerColor = FieldBackground,
+                                    unfocusedBorderColor = Color.Transparent,
+                                    focusedBorderColor = TealPrimary
+                                ),
+                                placeholder = { Text("20", fontSize = 14.sp) }
                             )
                         }
 
@@ -179,9 +228,18 @@ fun RecommendationScreen(
                                 letterSpacing = (-0.32).sp
                             )
                             Spacer(modifier = Modifier.height(8.dp))
-                            FieldBox(
-                                text = "Jawa Timur",
-                                modifier = Modifier.fillMaxWidth()
+                            OutlinedTextField(
+                                value = uiState.province,
+                                onValueChange = { viewModel.updateProvince(it) },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(10.dp),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    unfocusedContainerColor = FieldBackground,
+                                    focusedContainerColor = FieldBackground,
+                                    unfocusedBorderColor = Color.Transparent,
+                                    focusedBorderColor = TealPrimary
+                                ),
+                                placeholder = { Text("Jawa Timur", fontSize = 14.sp) }
                             )
                         }
                     }
@@ -203,21 +261,21 @@ fun RecommendationScreen(
                     ) {
                         SelectableChip(
                             text = "Fisik",
-                            selected = selectedViolence == ViolenceType.Physical,
+                            selected = uiState.violenceType == "FISIK",
                             modifier = Modifier.weight(1f),
-                            onClick = { selectedViolence = ViolenceType.Physical }
+                            onClick = { viewModel.updateViolenceType("FISIK") }
                         )
                         SelectableChip(
                             text = "Verbal",
-                            selected = selectedViolence == ViolenceType.Verbal,
+                            selected = uiState.violenceType == "VERBAL",
                             modifier = Modifier.weight(1f),
-                            onClick = { selectedViolence = ViolenceType.Verbal }
+                            onClick = { viewModel.updateViolenceType("VERBAL") }
                         )
                         SelectableChip(
                             text = "Fisik & Verbal",
-                            selected = selectedViolence == ViolenceType.Both,
+                            selected = uiState.violenceType == "FISIK_VERBAL",
                             modifier = Modifier.weight(1.2f),
-                            onClick = { selectedViolence = ViolenceType.Both }
+                            onClick = { viewModel.updateViolenceType("FISIK_VERBAL") }
                         )
                     }
 
@@ -238,21 +296,21 @@ fun RecommendationScreen(
                     ) {
                         SelectableChip(
                             text = "Psikologi",
-                            selected = selectedService == ServiceType.Psychology,
+                            selected = uiState.serviceType == "PSIKOLOGI",
                             modifier = Modifier.weight(1f),
-                            onClick = { selectedService = ServiceType.Psychology }
+                            onClick = { viewModel.updateServiceType("PSIKOLOGI") }
                         )
                         SelectableChip(
                             text = "Hukum",
-                            selected = selectedService == ServiceType.Law,
+                            selected = uiState.serviceType == "HUKUM",
                             modifier = Modifier.weight(1f),
-                            onClick = { selectedService = ServiceType.Law }
+                            onClick = { viewModel.updateServiceType("HUKUM") }
                         )
                         SelectableChip(
                             text = "Psikologis & Hukum",
-                            selected = selectedService == ServiceType.Both,
+                            selected = uiState.serviceType == "PSIKOLOGI_HUKUM",
                             modifier = Modifier.weight(1.4f),
-                            onClick = { selectedService = ServiceType.Both }
+                            onClick = { viewModel.updateServiceType("PSIKOLOGI_HUKUM") }
                         )
                     }
 
@@ -260,7 +318,7 @@ fun RecommendationScreen(
 
                     // Tombol tampilkan rekomendasi
                     Button(
-                        onClick = onShowRecommendationClick,
+                        onClick = { viewModel.getRecommendation() },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(47.dp),
@@ -268,7 +326,10 @@ fun RecommendationScreen(
                         colors = ButtonDefaults.buttonColors(
                             containerColor = TealPrimary,
                             contentColor = Color.White
-                        )
+                        ),
+                        enabled = !uiState.isLoading && 
+                                 uiState.name.isNotBlank() && 
+                                 uiState.province.isNotBlank()
                     ) {
                         Text(
                             text = "Tampilkan Rekomendasi",
@@ -282,6 +343,7 @@ fun RecommendationScreen(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
+            }
         }
     }
 }

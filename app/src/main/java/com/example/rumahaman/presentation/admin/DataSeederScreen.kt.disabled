@@ -1,0 +1,164 @@
+package com.example.rumahaman.presentation.admin
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.rumahaman.data.repository.RecommendationDataSeeder
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+data class SeederUiState(
+    val isLoading: Boolean = false,
+    val message: String = "",
+    val isSuccess: Boolean = false
+)
+
+@HiltViewModel
+class DataSeederViewModel @Inject constructor(
+    private val seeder: RecommendationDataSeeder
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(SeederUiState())
+    val uiState: StateFlow<SeederUiState> = _uiState.asStateFlow()
+
+    fun seedData() {
+        viewModelScope.launch {
+            _uiState.value = SeederUiState(isLoading = true)
+            
+            val result = seeder.seedRecommendations()
+            
+            result.fold(
+                onSuccess = { message ->
+                    _uiState.value = SeederUiState(
+                        isLoading = false,
+                        message = message,
+                        isSuccess = true
+                    )
+                },
+                onFailure = { exception ->
+                    _uiState.value = SeederUiState(
+                        isLoading = false,
+                        message = "Error: ${exception.message}",
+                        isSuccess = false
+                    )
+                }
+            )
+        }
+    }
+
+    fun resetState() {
+        _uiState.value = SeederUiState()
+    }
+}
+
+@Composable
+fun DataSeederScreen(
+    viewModel: DataSeederViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsState()
+
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "Setup Data Rekomendasi",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Text(
+                text = "Klik tombol di bawah untuk upload 9 data rekomendasi ke Firestore",
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            
+            Spacer(modifier = Modifier.height(32.dp))
+            
+            if (uiState.isLoading) {
+                CircularProgressIndicator()
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("Mengupload data...")
+            } else if (uiState.message.isNotEmpty()) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (uiState.isSuccess) 
+                            MaterialTheme.colorScheme.primaryContainer 
+                        else 
+                            MaterialTheme.colorScheme.errorContainer
+                    )
+                ) {
+                    Text(
+                        text = uiState.message,
+                        modifier = Modifier.padding(16.dp),
+                        color = if (uiState.isSuccess)
+                            MaterialTheme.colorScheme.onPrimaryContainer
+                        else
+                            MaterialTheme.colorScheme.onErrorContainer
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                TextButton(onClick = { viewModel.resetState() }) {
+                    Text("Reset")
+                }
+            } else {
+                Button(
+                    onClick = { viewModel.seedData() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                ) {
+                    Text("Upload Data ke Firestore", fontSize = 16.sp)
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(32.dp))
+            
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        "⚠️ Perhatian:",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "• Screen ini hanya untuk setup awal\n" +
+                        "• Jalankan sekali saja\n" +
+                        "• Pastikan Firestore rules sudah diset\n" +
+                        "• Setelah selesai, hapus screen ini dari production",
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp
+                    )
+                }
+            }
+        }
+    }
+}

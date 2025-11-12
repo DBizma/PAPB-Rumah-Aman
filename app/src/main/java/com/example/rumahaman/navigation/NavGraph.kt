@@ -7,12 +7,15 @@ import com.example.rumahaman.presentation.halamanAwal.HalamanAwalScreen
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+// import com.example.rumahaman.presentation.admin.DataSeederScreen // REMOVED: Development only
 import com.example.rumahaman.presentation.dashboard.DashboardScreen
 import com.example.rumahaman.presentation.halamanAwal.HalamanAwalScreen
 import com.example.rumahaman.presentation.chatbot.ChatBotScreen
+import com.example.rumahaman.presentation.hasilrekomendasi.RecommendationResultScreen
 import com.example.rumahaman.presentation.login.LoginScreen
 import com.example.rumahaman.presentation.main.MainScreen
 import com.example.rumahaman.presentation.notification.NotificationScreen
+import com.example.rumahaman.presentation.recommendation.RecommendationScreen
 import com.example.rumahaman.presentation.register.RegisterScreen
 import com.example.rumahaman.presentation.splash.SplashScreen
 
@@ -26,6 +29,9 @@ object Routes {
     const val NOTIFICATION_SCREEN = "notification"
     const val SETTINGS_SCREEN = "settings"
     const val CHATBOT_SCREEN = "chatbot"
+    const val RECOMMENDATION_SCREEN = "recommendation"
+    const val RECOMMENDATION_RESULT_SCREEN = "recommendation_result"
+    // const val DATA_SEEDER_SCREEN = "data_seeder" // REMOVED: Development only
 }
 
 
@@ -57,6 +63,26 @@ fun AppNavHost(
         composable(Routes.CHATBOT_SCREEN) {
             ChatBotScreen(navController = navController)
         }
+        
+        composable(Routes.RECOMMENDATION_SCREEN) {
+            RecommendationScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavigateToResult = { 
+                    navController.navigate(Routes.RECOMMENDATION_RESULT_SCREEN)
+                }
+            )
+        }
+        
+        composable(Routes.RECOMMENDATION_RESULT_SCREEN) {
+            RecommendationResultScreen(
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+        
+        // // Development only - untuk upload data awal (REMOVED)
+        // composable(Routes.DATA_SEEDER_SCREEN) {
+        //     DataSeederScreen()
+        // }
 
         // --- Rute Utama ke MainScreen ---
         // Saat rute ini dipanggil, kita hanya menampilkan MainScreen.

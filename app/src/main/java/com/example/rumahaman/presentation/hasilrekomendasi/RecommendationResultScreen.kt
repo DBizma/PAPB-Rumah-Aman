@@ -3,15 +3,16 @@ package com.example.rumahaman.presentation.hasilrekomendasi
 import com.example.rumahaman.R
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -26,40 +27,55 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.rumahaman.presentation.recommendation.RecommendationViewModel
 
 private val TealPrimary = Color(0xFF2E7D84)
 private val CardBackground = Color(0x66D9E6E2) // rgba(217,230,226,0.4)
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecommendationResultScreen(
     modifier: Modifier = Modifier,
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    viewModel: RecommendationViewModel = hiltViewModel()
 ) {
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(Color.White)
-    ) {
+    val uiState by viewModel.uiState.collectAsState()
+    val recommendation = uiState.recommendation
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Hasil Rekomendasi", fontWeight = FontWeight.Bold) },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+            )
+        },
+        containerColor = Color.White
+    ) { paddingValues ->
+        if (recommendation == null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("Data rekomendasi tidak tersedia")
+            }
+            return@Scaffold
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                // sama seperti layout Figma: margin kiri/kanan 27dp
-                .padding(horizontal = 27.dp, vertical = 16.dp)
+                .padding(paddingValues)
+                .padding(horizontal = 27.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            // ep:back (166-823)
-            Box(
-                modifier = Modifier
-                    .size(38.dp)
-                    .clickable(onClick = onBackClick),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Kembali",
-                    tint = Color.Black
-                )
-            }
-
             Spacer(modifier = Modifier.height(16.dp))
 
             // "Layanan yang tepat untuk Anda:" (166-851)
@@ -80,22 +96,16 @@ fun RecommendationResultScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Rectangle 16 (166-850)
+            // Card hasil rekomendasi
             Box(
                 modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
+                    .fillMaxWidth()
                     .shadow(
                         elevation = 4.dp,
                         shape = RoundedCornerShape(size = 10.dp),
                         ambientColor = Color(0x40000000),
                         spotColor = Color(0x40000000)
                     )
-                    // dengan padding Column 27dp kiri/kanan,
-                    // fillMaxWidth -> lebar kartu ≈ 376dp di iPhone,
-                    // dan margin visual tetap 27dp di medium phone Android
-                    .width(430.dp)
-                    .height(932.dp)
-                    .heightIn(min = 546.dp)
                     .background(
                         color = CardBackground,
                         shape = RoundedCornerShape(size = 10.dp)
@@ -103,11 +113,11 @@ fun RecommendationResultScreen(
             ) {
                 Column(
                     modifier = Modifier
-                        .fillMaxSize()
+                        .fillMaxWidth()
                         .padding(horizontal = 24.dp, vertical = 24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Logo layanan (171-785)
+                    // Logo layanan
                     Image(
                         painter = painterResource(id = R.drawable.logo_hasilrekomendasi),
                         contentDescription = null,
@@ -116,7 +126,7 @@ fun RecommendationResultScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Nama Layanan (162-1266, 162-1267)
+                    // Nama Layanan
                     Text(
                         text = "Nama Layanan:",
                         fontSize = 16.sp,
@@ -127,7 +137,7 @@ fun RecommendationResultScreen(
                             .padding(bottom = 4.dp)
                     )
                     Text(
-                        text = "Biro Psikologi Lestari",
+                        text = recommendation.service.name,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = TealPrimary,
@@ -137,7 +147,7 @@ fun RecommendationResultScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Deskripsi Layanan (162-1268, 162-1270)
+                    // Deskripsi Layanan
                     Text(
                         text = "Deskripsi Layanan:",
                         fontSize = 16.sp,
@@ -148,7 +158,7 @@ fun RecommendationResultScreen(
                             .padding(bottom = 4.dp)
                     )
                     Text(
-                        text = "Biro Psikologi Lestari merupakan sebuah biro layanan psikologi yang menyediakan layanan utama berupa konsultasi psikologis maupun psikiatri, tes psikologis untuk kepentingan pendidikan, dan tes psikologis untuk kepentingan rekrutmen.",
+                        text = recommendation.service.description,
                         fontSize = 14.sp,
                         letterSpacing = (-0.28).sp,
                         textAlign = TextAlign.Start,
@@ -157,7 +167,7 @@ fun RecommendationResultScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Alamat Layanan (163-1272, 163-1273)
+                    // Alamat Layanan
                     Text(
                         text = "Alamat Layanan:",
                         fontSize = 16.sp,
@@ -168,7 +178,7 @@ fun RecommendationResultScreen(
                             .padding(bottom = 4.dp)
                     )
                     Text(
-                        text = "The Serenity, Jl. Nginden Semolo No.21, RT.000/RW.00, Semolowaru, Kec. Sukolilo, Surabaya, Jawa Timur 60118",
+                        text = recommendation.service.address,
                         fontSize = 14.sp,
                         letterSpacing = (-0.28).sp,
                         textAlign = TextAlign.Start,
@@ -177,7 +187,7 @@ fun RecommendationResultScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Kontak Layanan (163-1276, 163-1277)
+                    // Kontak Layanan
                     Text(
                         text = "Kontak Layanan:",
                         fontSize = 16.sp,
@@ -187,18 +197,50 @@ fun RecommendationResultScreen(
                             .fillMaxWidth()
                             .padding(bottom = 4.dp)
                     )
-                    Text(
-                        text = "https://linktr.ee/BiroLestari",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Light,
-                        color = TealPrimary,
-                        letterSpacing = (-0.32).sp,
-                        textAlign = TextAlign.Start,
-                        textDecoration = TextDecoration.Underline,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    
+                    // URL
+                    if (recommendation.service.contact.url.isNotBlank()) {
+                        Text(
+                            text = recommendation.service.contact.url,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Light,
+                            color = TealPrimary,
+                            letterSpacing = (-0.28).sp,
+                            textAlign = TextAlign.Start,
+                            textDecoration = TextDecoration.Underline,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                    
+                    // Phone
+                    if (recommendation.service.contact.phone.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Telepon: ${recommendation.service.contact.phone}",
+                            fontSize = 14.sp,
+                            letterSpacing = (-0.28).sp,
+                            textAlign = TextAlign.Start,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                    
+                    // Email
+                    if (recommendation.service.contact.email.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Email: ${recommendation.service.contact.email}",
+                            fontSize = 14.sp,
+                            color = TealPrimary,
+                            letterSpacing = (-0.28).sp,
+                            textAlign = TextAlign.Start,
+                            textDecoration = TextDecoration.Underline,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
                 }
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }

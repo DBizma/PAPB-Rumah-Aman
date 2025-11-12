@@ -1,0 +1,267 @@
+package com.example.rumahaman.data.repository
+
+import com.example.rumahaman.data.model.RecommendationInput
+import com.example.rumahaman.data.model.RecommendationResult
+import com.example.rumahaman.data.model.RecommendationService
+import com.example.rumahaman.data.model.ServiceContact
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
+import javax.inject.Inject
+import javax.inject.Singleton
+
+/**
+ * Helper class untuk upload data rekomendasi awal ke Firestore
+ * Jalankan sekali saja untuk setup data
+ */
+@Singleton
+class RecommendationDataSeeder @Inject constructor(
+    private val firestore: FirebaseFirestore
+) {
+    
+    suspend fun seedRecommendations(): kotlin.Result<String> {
+        return try {
+            val recommendations = getInitialRecommendations()
+            val batch = firestore.batch()
+            
+            recommendations.forEach { recommendation ->
+                val docRef = firestore.collection("recommendations")
+                    .document(recommendation.recommendationId)
+                batch.set(docRef, recommendation)
+            }
+            
+            batch.commit().await()
+            kotlin.Result.success("Berhasil upload ${recommendations.size} rekomendasi ke Firestore!")
+        } catch (e: Exception) {
+            kotlin.Result.failure(e)
+        }
+    }
+    
+    private fun getInitialRecommendations(): List<RecommendationResult> {
+        return listOf(
+            // 1. Perempuan - Verbal - Psikologi
+            RecommendationResult(
+                recommendationId = "rec-perempuan-verbal-psikologi-jatim-01",
+                input = RecommendationInput(
+                    gender = "Perempuan",
+                    violence = "VERBAL",
+                    need = "PSIKOLOGI",
+                    province = "Jawa Timur"
+                ),
+                service = RecommendationService(
+                    name = "Biro Psikologi Lestari",
+                    type = "PSIKOLOGI",
+                    description = "Konseling psikologis, dukungan trauma ringan-sedang, dan asesmen psikologi.",
+                    address = "The Serenity, Jl. Nginden Semolo No.21, Surabaya, Jawa Timur",
+                    contact = ServiceContact(
+                        url = "https://contoh.id/biro-lestari",
+                        phone = "+62-812-0000-0001",
+                        email = "admin@birolestari.id"
+                    ),
+                    logoUrl = null,
+                    tags = listOf("trauma", "konseling", "verbal-abuse"),
+                    lastUpdated = "2025-11-10"
+                )
+            ),
+            
+            // 2. Perempuan - Verbal - Hukum
+            RecommendationResult(
+                recommendationId = "rec-perempuan-verbal-hukum-jatim-01",
+                input = RecommendationInput(
+                    gender = "Perempuan",
+                    violence = "VERBAL",
+                    need = "HUKUM",
+                    province = "Jawa Timur"
+                ),
+                service = RecommendationService(
+                    name = "LBH Suara Adil",
+                    type = "HUKUM",
+                    description = "Konsultasi hukum, penyusunan laporan, dan pendampingan negosiasi terkait kekerasan verbal.",
+                    address = "Jl. Raya Darmo No.88, Surabaya, Jawa Timur",
+                    contact = ServiceContact(
+                        url = "https://contoh.id/lbh-suaraadil",
+                        phone = "+62-811-1000-2002",
+                        email = "kontak@lbh-suaraadil.or.id"
+                    ),
+                    logoUrl = null,
+                    tags = listOf("pendampingan", "hukum", "kekerasan-verbal"),
+                    lastUpdated = "2025-11-10"
+                )
+            ),
+            
+            // 3. Perempuan - Verbal - Psikologi & Hukum
+            RecommendationResult(
+                recommendationId = "rec-perempuan-verbal-psikologi_hukum-jatim-01",
+                input = RecommendationInput(
+                    gender = "Perempuan",
+                    violence = "VERBAL",
+                    need = "PSIKOLOGI_HUKUM",
+                    province = "Jawa Timur"
+                ),
+                service = RecommendationService(
+                    name = "Pusat Layanan Terpadu Harmoni",
+                    type = "PSIKOLOGI_HUKUM",
+                    description = "Layanan satu pintu: konseling psikologi dan pendampingan hukum terintegrasi.",
+                    address = "Jl. Mayjen Sungkono No.12, Surabaya, Jawa Timur",
+                    contact = ServiceContact(
+                        url = "https://contoh.id/plt-harmoni",
+                        phone = "+62-813-3333-4444",
+                        email = "cs@harmoni-center.id"
+                    ),
+                    logoUrl = null,
+                    tags = listOf("terpadu", "psikologi", "hukum"),
+                    lastUpdated = "2025-11-10"
+                )
+            ),
+            
+            // 4. Laki-laki - Fisik - Psikologi
+            RecommendationResult(
+                recommendationId = "rec-laki-fisik-psikologi-jatim-01",
+                input = RecommendationInput(
+                    gender = "Laki-laki",
+                    violence = "FISIK",
+                    need = "PSIKOLOGI",
+                    province = "Jawa Timur"
+                ),
+                service = RecommendationService(
+                    name = "Klinik Trauma Recovery Sejahtera",
+                    type = "PSIKOLOGI",
+                    description = "Pendampingan trauma fisik/psikis, sesi konseling individual, dan rujukan medis.",
+                    address = "Jl. Ijen No.45, Malang, Jawa Timur",
+                    contact = ServiceContact(
+                        url = "https://contoh.id/ktr-sejahtera",
+                        phone = "+62-822-1111-2222",
+                        email = "halo@ktrsejahtera.id"
+                    ),
+                    logoUrl = null,
+                    tags = listOf("trauma", "pemulihan", "fisik"),
+                    lastUpdated = "2025-11-10"
+                )
+            ),
+            
+            // 5. Laki-laki - Fisik - Hukum
+            RecommendationResult(
+                recommendationId = "rec-laki-fisik-hukum-jatim-01",
+                input = RecommendationInput(
+                    gender = "Laki-laki",
+                    violence = "FISIK",
+                    need = "HUKUM",
+                    province = "Jawa Timur"
+                ),
+                service = RecommendationService(
+                    name = "Unit Pendampingan Hukum Amanah",
+                    type = "HUKUM",
+                    description = "Konsultasi pelaporan, pendampingan proses pidana/perdata, dan rujukan visum.",
+                    address = "Jl. Ahmad Yani No.10, Sidoarjo, Jawa Timur",
+                    contact = ServiceContact(
+                        url = "https://contoh.id/uph-amanah",
+                        phone = "+62-815-7777-8888",
+                        email = "pendampingan@amanah-legal.id"
+                    ),
+                    logoUrl = null,
+                    tags = listOf("pelaporan", "pendampingan", "visum"),
+                    lastUpdated = "2025-11-10"
+                )
+            ),
+            
+            // 6. Laki-laki - Fisik - Psikologi & Hukum
+            RecommendationResult(
+                recommendationId = "rec-laki-fisik-psikologi_hukum-jatim-01",
+                input = RecommendationInput(
+                    gender = "Laki-laki",
+                    violence = "FISIK",
+                    need = "PSIKOLOGI_HUKUM",
+                    province = "Jawa Timur"
+                ),
+                service = RecommendationService(
+                    name = "Pusat Krisis Terpadu Sehati",
+                    type = "PSIKOLOGI_HUKUM",
+                    description = "Tim psikologi dan hukum kolaboratif untuk pemulihan korban kekerasan fisik.",
+                    address = "Jl. Ketintang No.3, Surabaya, Jawa Timur",
+                    contact = ServiceContact(
+                        url = "https://contoh.id/pkt-sehati",
+                        phone = "+62-819-5555-6666",
+                        email = "help@sehati-terpadu.id"
+                    ),
+                    logoUrl = null,
+                    tags = listOf("krisis", "terpadu", "fisik"),
+                    lastUpdated = "2025-11-10"
+                )
+            ),
+            
+            // 7. Perempuan - Fisik & Verbal - Psikologi
+            RecommendationResult(
+                recommendationId = "rec-perempuan-fisik_verbal-psikologi-jatim-01",
+                input = RecommendationInput(
+                    gender = "Perempuan",
+                    violence = "FISIK_VERBAL",
+                    need = "PSIKOLOGI",
+                    province = "Jawa Timur"
+                ),
+                service = RecommendationService(
+                    name = "Rumah Konseling Pelita",
+                    type = "PSIKOLOGI",
+                    description = "Konseling trauma campuran (fisik & verbal), dukungan kelompok, dan rencana keselamatan.",
+                    address = "Jl. Tidar No.7, Malang, Jawa Timur",
+                    contact = ServiceContact(
+                        url = "https://contoh.id/pelita",
+                        phone = "+62-821-9090-1111",
+                        email = "kontak@pelita-counseling.id"
+                    ),
+                    logoUrl = null,
+                    tags = listOf("konseling", "dukungan-kelompok", "rencana-keselamatan"),
+                    lastUpdated = "2025-11-10"
+                )
+            ),
+            
+            // 8. Perempuan - Fisik & Verbal - Hukum
+            RecommendationResult(
+                recommendationId = "rec-perempuan-fisik_verbal-hukum-jatim-01",
+                input = RecommendationInput(
+                    gender = "Perempuan",
+                    violence = "FISIK_VERBAL",
+                    need = "HUKUM",
+                    province = "Jawa Timur"
+                ),
+                service = RecommendationService(
+                    name = "Posko Bantuan Hukum Tangguh",
+                    type = "HUKUM",
+                    description = "Pendampingan kasus multi-bentuk kekerasan, mediasi, hingga litigasi.",
+                    address = "Jl. Pahlawan No.25, Surabaya, Jawa Timur",
+                    contact = ServiceContact(
+                        url = "https://contoh.id/pbh-tangguh",
+                        phone = "+62-817-3333-2222",
+                        email = "posko@tangguh-legal.id"
+                    ),
+                    logoUrl = null,
+                    tags = listOf("mediasi", "litigasi", "multi-bentuk"),
+                    lastUpdated = "2025-11-10"
+                )
+            ),
+            
+            // 9. Perempuan - Fisik & Verbal - Psikologi & Hukum
+            RecommendationResult(
+                recommendationId = "rec-perempuan-fisik_verbal-psikologi_hukum-jatim-01",
+                input = RecommendationInput(
+                    gender = "Perempuan",
+                    violence = "FISIK_VERBAL",
+                    need = "PSIKOLOGI_HUKUM",
+                    province = "Jawa Timur"
+                ),
+                service = RecommendationService(
+                    name = "Sentra Layanan Terpadu Mandiri",
+                    type = "PSIKOLOGI_HUKUM",
+                    description = "Layanan komprehensif: konseling psikologi, pendampingan hukum, dan rujukan medis.",
+                    address = "Jl. Arjuna No.9, Gresik, Jawa Timur",
+                    contact = ServiceContact(
+                        url = "https://contoh.id/slt-mandiri",
+                        phone = "+62-816-4242-5353",
+                        email = "support@sltmandiri.id"
+                    ),
+                    logoUrl = null,
+                    tags = listOf("komprehensif", "psikologi", "hukum", "rujukan-medis"),
+                    lastUpdated = "2025-11-10"
+                )
+            )
+        )
+    }
+}

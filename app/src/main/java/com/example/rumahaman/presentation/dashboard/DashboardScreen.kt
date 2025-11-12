@@ -137,7 +137,7 @@ fun DashboardScreen(navController: NavController) {
                         .clip(DiagonalCutTopRightShape(cutSize = 36.dp, cornerRadius = 12.dp))
                         .background(Color(0xFFEFD2C3))
                         .clickable {
-                            println("Tombol Bagian 2B ditekan!")
+                            navController.navigate(Routes.RECOMMENDATION_SCREEN)
                         },
                     horizontalAlignment = Alignment.Start,
                     verticalArrangement = Arrangement.Bottom // Mulai konten dari atas
