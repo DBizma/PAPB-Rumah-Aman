@@ -17,9 +17,9 @@ data class TipFirestore(
     val title: String = "",
     val description: String = "",
     val link: String = "",
-    // --- TAMBAHKAN FIELD INI ---
-    @ServerTimestamp // Anotasi ini penting untuk handle timestamp dari server
-    val createdAt: Date? = null
+    @ServerTimestamp
+    val createdAt: Date? = null,
+    val viewCount: Int = 0 // ← TAMBAH INI
 )
 
 @Singleton
@@ -53,7 +53,8 @@ class TipsRepository @Inject constructor(
                             title = it.title,
                             description = it.description,
                             link = it.link,
-                            createdAt = it.createdAt
+                            createdAt = it.createdAt,
+                            viewCount = it.viewCount
                         )
                     }
                 }
@@ -65,5 +66,81 @@ class TipsRepository @Inject constructor(
         // Saat Flow dibatalkan (misal: user keluar dari layar),
         // hentikan listener untuk menghemat resource.
         awaitClose { listener.remove() }
+    }
+    
+    // Fungsi untuk mendapatkan 2 tips populer (berdasarkan viewCount tertinggi)
+    // Jika kurang dari 2, ambil tips terbaru
+    suspend fun getPopularTips(): kotlin.Result<List<NotificationItem.Tip>> {
+        return try {
+            // Query tips dengan viewCount tertinggi
+            val popularQuery = firestore.collection("tips")
+                .orderBy("viewCount", Query.Direction.DESCENDING)
+                .limit(2)
+                .get()
+                .await()
+            
+            var tipsList = popularQuery.documents.mapNotNull { doc ->
+                val tipData = doc.toObject(TipFirestore::class.java)
+                tipData?.let {
+                    NotificationItem.Tip(
+                        id = doc.id,
+                        title = it.title,
+                        description = it.description,
+                        link = it.link,
+                        createdAt = it.createdAt,
+                        viewCount = it.viewCount
+                    )
+                }
+            }
+            
+            // Jika kurang dari 2, ambil tips terbaru untuk melengkapi
+            if (tipsList.size < 2) {
+                val recentQuery = firestore.collection("tips")
+                    .orderBy("createdAt", Query.Direction.DESCENDING)
+                    .limit(2)
+                    .get()
+                    .await()
+                
+                val recentTips = recentQuery.documents.mapNotNull { doc ->
+                    val tipData = doc.toObject(TipFirestore::class.java)
+                    tipData?.let {
+                        NotificationItem.Tip(
+                            id = doc.id,
+                            title = it.title,
+                            description = it.description,
+                            link = it.link,
+                            createdAt = it.createdAt,
+                            viewCount = it.viewCount
+                        )
+                    }
+                }
+                
+                // Gabungkan dan remove duplicate berdasarkan id
+                tipsList = (tipsList + recentTips)
+                    .distinctBy { it.id }
+                    .take(2)
+            }
+            
+            kotlin.Result.success(tipsList)
+        } catch (e: Exception) {
+            android.util.Log.e("TipsRepository", "Error getting popular tips", e)
+            kotlin.Result.failure(e)
+        }
+    }
+    
+    // Fungsi untuk increment view count
+    suspend fun incrementTipViewCount(tipId: String): kotlin.Result<Unit> {
+        return try {
+            firestore.collection("tips")
+                .document(tipId)
+                .update("viewCount", com.google.firebase.firestore.FieldValue.increment(1))
+                .await()
+            
+            android.util.Log.d("TipsRepository", "Successfully incremented viewCount for tip: $tipId")
+            kotlin.Result.success(Unit)
+        } catch (e: Exception) {
+            android.util.Log.e("TipsRepository", "Error incrementing viewCount", e)
+            kotlin.Result.failure(e)
+        }
     }
 }

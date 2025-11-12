@@ -16,7 +16,8 @@ sealed class NotificationItem(
         title: String,
         description: String,
         val link: String,
-        val createdAt: Date? // <-- TAMBAHKAN PROPERTI INI
+        val createdAt: Date?, // <-- TAMBAHKAN PROPERTI INI
+        val viewCount: Int = 0 // ← TAMBAH INI untuk counter
     ) : NotificationItem(id, R.drawable.new_notif, title, description)
 
     // Kelas lain di bawah ini tidak perlu diubah

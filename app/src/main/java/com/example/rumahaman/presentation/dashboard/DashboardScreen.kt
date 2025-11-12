@@ -1,34 +1,43 @@
 package com.example.rumahaman.presentation.dashboard
 
-
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.rumahaman.R
-import androidx.compose.ui.unit.sp
 import com.example.rumahaman.navigation.Routes
+import com.example.rumahaman.presentation.ui.TipCard
 import com.google.firebase.auth.FirebaseAuth
+
 
 @Composable
 fun IconUser() {
@@ -40,9 +49,13 @@ fun IconUser() {
 }
 
 @Composable
-fun DashboardScreen(navController: NavController) {
+fun DashboardScreen(
+    navController: NavController,
+    viewModel: DashboardViewModel = hiltViewModel()
+) {
     // Ambil nama user dari Firebase Auth
     val userName = FirebaseAuth.getInstance().currentUser?.displayName ?: "User"
+    val uiState = viewModel.uiState.collectAsState().value
     
     Column (
         modifier = Modifier.fillMaxSize().padding(24.dp),
@@ -226,46 +239,65 @@ fun DashboardScreen(navController: NavController) {
                     modifier = Modifier.fillMaxWidth()
                 )
             }
-            Column (
-                modifier = Modifier
-                    .weight(1f)
-                ,verticalArrangement = Arrangement.spacedBy(12.dp)
-            ){
-                // --- KOTAK PERTAMA ---
+            
+            // Loading state
+            if (uiState.isLoading) {
                 Box(
                     modifier = Modifier
-                        // .padding( vertical = 8.dp) // Padding sebaiknya di luar Box
                         .weight(1f)
-                        .fillMaxWidth()
-                        // 1. Potong bentuknya DULU
-                        .clip(RoundedCornerShape(12 .dp))
-                        // 2. BARU warnai bentuk yang sudah terpotong
-                        .background(Color(0xFFD9E6E2))
-                ){
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = Color(0xFF2E7D84))
+                }
+            }
+            // Error state
+            else if (uiState.error != null) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
                     Text(
-                        text = "Tips 1",
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(16.dp)
+                        text = "Gagal memuat tips",
+                        color = Color.Gray,
+                        fontSize = 14.sp
                     )
                 }
-
-                // --- KOTAK KEDUA ---
+            }
+            // Empty state
+            else if (uiState.popularTips.isEmpty()) {
                 Box(
                     modifier = Modifier
-                        // .padding( vertical = 8.dp) // spacedBy sudah menangani jarak
                         .weight(1f)
-                        .fillMaxWidth()
-                        // Urutan yang benar
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFFD9E6E2))
-                ){
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
                     Text(
-                        text = "Tips 2",
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(16.dp)
+                        text = "Belum ada tips tersedia",
+                        color = Color.Gray,
+                        fontSize = 14.sp
                     )
+                }
+            }
+            // Content
+            else {
+                Column (
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ){
+                    uiState.popularTips.forEach { tip ->
+                        TipCard(
+                            tip = tip,
+                            onTipClicked = { tipId ->
+                                viewModel.onTipClicked(tipId)
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
                 }
             }
 
