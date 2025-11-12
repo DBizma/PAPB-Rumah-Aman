@@ -59,7 +59,7 @@ fun RecommendationScreen(
             .fillMaxSize()
             .background(Color.White)
     ) {
-        // background hijau dengan rounded top-left (sheet)
+        // Background hijau muda di bagian bawah
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -74,6 +74,7 @@ fun RecommendationScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp, vertical = 16.dp)
         ) {
+            // 🔹 Header atas
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -92,185 +93,192 @@ fun RecommendationScreen(
             }
 
             Spacer(modifier = Modifier.height(8.dp))
-
             HeaderSection()
-
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Nama
-            Text(
-                text = "Nama:",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = (-0.32).sp
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            FieldBox(
-                text = "Margaretha",
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Jenis Kelamin
-            Text(
-                text = "Jenis Kelamin:",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = (-0.32).sp
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                GenderCard(
-                    label = "Wanita",
-                    imageRes = R.drawable.perempuan_sistemrekomendasi,
-                    selected = selectedGender == Gender.Female,
-                    modifier = Modifier.weight(1f),
-                    onClick = { selectedGender = Gender.Female }
-                )
-                GenderCard(
-                    label = "Pria",
-                    imageRes = R.drawable.laki2_sistemrekomendasi,
-                    selected = selectedGender == Gender.Male,
-                    modifier = Modifier.weight(1f),
-                    onClick = { selectedGender = Gender.Male }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Umur & Provinsi
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = "Umur:",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = (-0.32).sp
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    FieldBox(
-                        text = "20",
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-
-                Column(
-                    modifier = Modifier.weight(2f)
-                ) {
-                    Text(
-                        text = "Provinsi:",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = (-0.32).sp
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    FieldBox(
-                        text = "Jawa Timur",
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Jenis kekerasan
-            Text(
-                text = "Jenis kekerasan seksual yang didapatkan:",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = (-0.32).sp
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                SelectableChip(
-                    text = "Fisik",
-                    selected = selectedViolence == ViolenceType.Physical,
-                    modifier = Modifier.weight(1f),
-                    onClick = { selectedViolence = ViolenceType.Physical }
-                )
-                SelectableChip(
-                    text = "Verbal",
-                    selected = selectedViolence == ViolenceType.Verbal,
-                    modifier = Modifier.weight(1f),
-                    onClick = { selectedViolence = ViolenceType.Verbal }
-                )
-                SelectableChip(
-                    text = "Fisik & Verbal",
-                    selected = selectedViolence == ViolenceType.Both,
-                    modifier = Modifier.weight(1.2f),
-                    onClick = { selectedViolence = ViolenceType.Both }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Pelayanan
-            Text(
-                text = "Anda membutuhkan pelayanan di bidang:",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = (-0.32).sp
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                SelectableChip(
-                    text = "Psikologi",
-                    selected = selectedService == ServiceType.Psychology,
-                    modifier = Modifier.weight(1f),
-                    onClick = { selectedService = ServiceType.Psychology }
-                )
-                SelectableChip(
-                    text = "Hukum",
-                    selected = selectedService == ServiceType.Law,
-                    modifier = Modifier.weight(1f),
-                    onClick = { selectedService = ServiceType.Law }
-                )
-                SelectableChip(
-                    text = "Psikologis & Hukum",
-                    selected = selectedService == ServiceType.Both,
-                    modifier = Modifier.weight(1.4f),
-                    onClick = { selectedService = ServiceType.Both }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Button(
-                onClick = onShowRecommendationClick,
+            // 🔹 Bagian form dibungkus Box agar rapi
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(47.dp),
-                shape = RoundedCornerShape(10.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = TealPrimary,
-                    contentColor = Color.White
-                )
+                    .clip(RoundedCornerShape(20.dp))
+                    .padding(20.dp)
             ) {
-                Text(
-                    text = "Tampilkan Rekomendasi",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                    letterSpacing = (-0.36).sp
-                )
+                Column(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    // Nama
+                    Text(
+                        text = "Nama:",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = (-0.32).sp
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    FieldBox(
+                        text = "Margaretha",
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Jenis Kelamin
+                    Text(
+                        text = "Jenis Kelamin:",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = (-0.32).sp
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        GenderCard(
+                            label = "Wanita",
+                            imageRes = R.drawable.perempuan_sistemrekomendasi,
+                            selected = selectedGender == Gender.Female,
+                            modifier = Modifier.weight(1f),
+                            onClick = { selectedGender = Gender.Female }
+                        )
+                        GenderCard(
+                            label = "Pria",
+                            imageRes = R.drawable.laki2_sistemrekomendasi,
+                            selected = selectedGender == Gender.Male,
+                            modifier = Modifier.weight(1f),
+                            onClick = { selectedGender = Gender.Male }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Umur & Provinsi
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Umur:",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = (-0.32).sp
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            FieldBox(
+                                text = "20",
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+
+                        Column(modifier = Modifier.weight(2f)) {
+                            Text(
+                                text = "Provinsi:",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = (-0.32).sp
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            FieldBox(
+                                text = "Jawa Timur",
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Jenis kekerasan
+                    Text(
+                        text = "Jenis kekerasan seksual yang didapatkan:",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = (-0.32).sp
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        SelectableChip(
+                            text = "Fisik",
+                            selected = selectedViolence == ViolenceType.Physical,
+                            modifier = Modifier.weight(1f),
+                            onClick = { selectedViolence = ViolenceType.Physical }
+                        )
+                        SelectableChip(
+                            text = "Verbal",
+                            selected = selectedViolence == ViolenceType.Verbal,
+                            modifier = Modifier.weight(1f),
+                            onClick = { selectedViolence = ViolenceType.Verbal }
+                        )
+                        SelectableChip(
+                            text = "Fisik & Verbal",
+                            selected = selectedViolence == ViolenceType.Both,
+                            modifier = Modifier.weight(1.2f),
+                            onClick = { selectedViolence = ViolenceType.Both }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Pelayanan
+                    Text(
+                        text = "Anda membutuhkan pelayanan di bidang:",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = (-0.32).sp
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        SelectableChip(
+                            text = "Psikologi",
+                            selected = selectedService == ServiceType.Psychology,
+                            modifier = Modifier.weight(1f),
+                            onClick = { selectedService = ServiceType.Psychology }
+                        )
+                        SelectableChip(
+                            text = "Hukum",
+                            selected = selectedService == ServiceType.Law,
+                            modifier = Modifier.weight(1f),
+                            onClick = { selectedService = ServiceType.Law }
+                        )
+                        SelectableChip(
+                            text = "Psikologis & Hukum",
+                            selected = selectedService == ServiceType.Both,
+                            modifier = Modifier.weight(1.4f),
+                            onClick = { selectedService = ServiceType.Both }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // Tombol tampilkan rekomendasi
+                    Button(
+                        onClick = onShowRecommendationClick,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(47.dp),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = TealPrimary,
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Text(
+                            text = "Tampilkan Rekomendasi",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
+                            letterSpacing = (-0.36).sp
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
