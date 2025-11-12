@@ -11,6 +11,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
@@ -18,12 +19,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -215,16 +221,40 @@ fun RecommendationScreen(
                             Spacer(modifier = Modifier.height(8.dp))
                             OutlinedTextField(
                                 value = uiState.age,
-                                onValueChange = { viewModel.updateAge(it) },
+                                onValueChange = { newValue ->
+                                    // Hanya terima angka dan maksimal 3 digit
+                                    if (newValue.isEmpty() || (newValue.all { it.isDigit() } && newValue.length <= 3)) {
+                                        viewModel.updateAge(newValue)
+                                    }
+                                },
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(10.dp),
                                 colors = OutlinedTextFieldDefaults.colors(
                                     unfocusedContainerColor = FieldBackground,
                                     focusedContainerColor = FieldBackground,
                                     unfocusedBorderColor = Color.Transparent,
-                                    focusedBorderColor = TealPrimary
+                                    focusedBorderColor = TealPrimary,
+                                    errorBorderColor = Color.Red,
+                                    errorContainerColor = FieldBackground
                                 ),
-                                placeholder = { Text("20", fontSize = 14.sp) }
+                                placeholder = { Text("20", fontSize = 14.sp) },
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Number,
+                                    imeAction = ImeAction.Next
+                                ),
+                                singleLine = true,
+                                isError = uiState.age.isNotBlank() && 
+                                          (uiState.age.toIntOrNull()?.let { it < 13 || it > 100 } ?: true),
+                                supportingText = {
+                                    if (uiState.age.isNotBlank() && 
+                                        (uiState.age.toIntOrNull()?.let { it < 13 || it > 100 } ?: true)) {
+                                        Text(
+                                            text = "Umur harus 13-100 tahun",
+                                            color = Color.Red,
+                                            fontSize = 12.sp
+                                        )
+                                    }
+                                }
                             )
                         }
 
@@ -236,19 +266,46 @@ fun RecommendationScreen(
                                 letterSpacing = (-0.32).sp
                             )
                             Spacer(modifier = Modifier.height(8.dp))
-                            OutlinedTextField(
-                                value = uiState.province,
-                                onValueChange = { viewModel.updateProvince(it) },
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(10.dp),
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    unfocusedContainerColor = FieldBackground,
-                                    focusedContainerColor = FieldBackground,
-                                    unfocusedBorderColor = Color.Transparent,
-                                    focusedBorderColor = TealPrimary
-                                ),
-                                placeholder = { Text("Jawa Timur", fontSize = 14.sp) }
-                            )
+                            
+                            // Dropdown Provinsi (hardcoded Jawa Timur)
+                            var expanded by remember { mutableStateOf(false) }
+                            
+                            ExposedDropdownMenuBox(
+                                expanded = expanded,
+                                onExpandedChange = { expanded = !expanded }
+                            ) {
+                                OutlinedTextField(
+                                    value = uiState.province.ifEmpty { "Pilih Provinsi" },
+                                    onValueChange = {},
+                                    readOnly = true,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .menuAnchor(),
+                                    shape = RoundedCornerShape(10.dp),
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        unfocusedContainerColor = FieldBackground,
+                                        focusedContainerColor = FieldBackground,
+                                        unfocusedBorderColor = Color.Transparent,
+                                        focusedBorderColor = TealPrimary
+                                    ),
+                                    trailingIcon = { 
+                                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) 
+                                    }
+                                )
+                                
+                                ExposedDropdownMenu(
+                                    expanded = expanded,
+                                    onDismissRequest = { expanded = false }
+                                ) {
+                                    DropdownMenuItem(
+                                        text = { Text("Jawa Timur") },
+                                        onClick = {
+                                            viewModel.updateProvince("Jawa Timur")
+                                            expanded = false
+                                        }
+                                    )
+                                }
+                            }
                         }
                     }
 
@@ -337,7 +394,12 @@ fun RecommendationScreen(
                         ),
                         enabled = !uiState.isLoading && 
                                  uiState.name.isNotBlank() && 
-                                 uiState.province.isNotBlank()
+                                 uiState.gender.isNotBlank() &&
+                                 uiState.age.isNotBlank() &&
+                                 uiState.age.toIntOrNull()?.let { it in 13..100 } == true &&
+                                 uiState.province.isNotBlank() &&
+                                 uiState.violenceType.isNotBlank() &&
+                                 uiState.serviceType.isNotBlank()
                     ) {
                         Text(
                             text = "Tampilkan Rekomendasi",
