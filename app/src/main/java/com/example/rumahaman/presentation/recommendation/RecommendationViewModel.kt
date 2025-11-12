@@ -59,6 +59,15 @@ class RecommendationViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
             
+            // Log input parameters
+            android.util.Log.d("RecommendationViewModel", "Getting recommendation with:")
+            android.util.Log.d("RecommendationViewModel", "  Name: ${_uiState.value.name}")
+            android.util.Log.d("RecommendationViewModel", "  Gender: ${_uiState.value.gender}")
+            android.util.Log.d("RecommendationViewModel", "  Age: ${_uiState.value.age}")
+            android.util.Log.d("RecommendationViewModel", "  Province: ${_uiState.value.province}")
+            android.util.Log.d("RecommendationViewModel", "  Violence Type: ${_uiState.value.violenceType}")
+            android.util.Log.d("RecommendationViewModel", "  Service Type: ${_uiState.value.serviceType}")
+            
             val result = repository.getRecommendation(
                 gender = _uiState.value.gender,
                 violence = _uiState.value.violenceType,
@@ -68,6 +77,7 @@ class RecommendationViewModel @Inject constructor(
 
             result.fold(
                 onSuccess = { recommendation ->
+                    android.util.Log.d("RecommendationViewModel", "✅ Success: Got recommendation ${recommendation.service.name}")
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         recommendation = recommendation,
@@ -75,6 +85,7 @@ class RecommendationViewModel @Inject constructor(
                     )
                 },
                 onFailure = { exception ->
+                    android.util.Log.e("RecommendationViewModel", "❌ Failed: ${exception.message}", exception)
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         error = exception.message ?: "Terjadi kesalahan"

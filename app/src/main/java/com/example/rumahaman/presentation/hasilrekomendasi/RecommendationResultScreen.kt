@@ -64,7 +64,20 @@ fun RecommendationResultScreen(
                     .padding(paddingValues),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Data rekomendasi tidak tersedia")
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "Data rekomendasi tidak tersedia",
+                        fontSize = 16.sp,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(onClick = onBackClick) {
+                        Text("Kembali ke Dashboard")
+                    }
+                }
             }
             return@Scaffold
         }

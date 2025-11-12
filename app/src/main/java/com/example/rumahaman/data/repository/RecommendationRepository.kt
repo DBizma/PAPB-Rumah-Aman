@@ -19,6 +19,13 @@ class RecommendationRepository @Inject constructor(
         province: String
     ): kotlin.Result<RecommendationResult> {
         return try {
+            // Log query parameters
+            android.util.Log.d("RecommendationRepository", "Searching with:")
+            android.util.Log.d("RecommendationRepository", "  gender: $gender")
+            android.util.Log.d("RecommendationRepository", "  violence: $violence")
+            android.util.Log.d("RecommendationRepository", "  need: $need")
+            android.util.Log.d("RecommendationRepository", "  province: $province")
+            
             val query = recommendationsCollection
                 .whereEqualTo("input.gender", gender)
                 .whereEqualTo("input.violence", violence)
@@ -28,17 +35,26 @@ class RecommendationRepository @Inject constructor(
                 .get()
                 .await()
 
+            android.util.Log.d("RecommendationRepository", "Query returned ${query.documents.size} documents")
+
             if (query.documents.isNotEmpty()) {
-                val recommendation = query.documents.first().toObject(RecommendationResult::class.java)
+                val doc = query.documents.first()
+                android.util.Log.d("RecommendationRepository", "Document data: ${doc.data}")
+                
+                val recommendation = doc.toObject(RecommendationResult::class.java)
                 if (recommendation != null) {
+                    android.util.Log.d("RecommendationRepository", "Successfully parsed recommendation: ${recommendation.service.name}")
                     kotlin.Result.success(recommendation)
                 } else {
+                    android.util.Log.e("RecommendationRepository", "Failed to parse recommendation")
                     kotlin.Result.failure(Exception("Failed to parse recommendation"))
                 }
             } else {
-                kotlin.Result.failure(Exception("Tidak ada rekomendasi yang sesuai"))
+                android.util.Log.e("RecommendationRepository", "No matching recommendations found")
+                kotlin.Result.failure(Exception("Tidak ada rekomendasi yang sesuai dengan kriteria Anda"))
             }
         } catch (e: Exception) {
+            android.util.Log.e("RecommendationRepository", "Error getting recommendation", e)
             kotlin.Result.failure(e)
         }
     }

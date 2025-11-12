@@ -21,13 +21,13 @@ data class RecommendationService(
     @PropertyName("description") val description: String = "",
     @PropertyName("address") val address: String = "",
     @PropertyName("contact") val contact: ServiceContact = ServiceContact(),
-    @PropertyName("logo_url") val logoUrl: String? = null,
+    @PropertyName("logoUrl") val logoUrl: String? = null,  // Changed from logo_url
     @PropertyName("tags") val tags: List<String> = emptyList(),
-    @PropertyName("last_updated") val lastUpdated: String = ""
+    @PropertyName("lastUpdated") val lastUpdated: String = ""  // Changed from last_updated
 )
 
 data class RecommendationResult(
-    @PropertyName("recommendation_id") val recommendationId: String = "",
+    @PropertyName("recommendationId") val recommendationId: String = "",  // Changed from recommendation_id
     @PropertyName("input") val input: RecommendationInput = RecommendationInput(),
     @PropertyName("service") val service: RecommendationService = RecommendationService()
 )

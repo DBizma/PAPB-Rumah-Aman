@@ -1,9 +1,11 @@
 package com.example.rumahaman.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import com.example.rumahaman.presentation.halamanAwal.HalamanAwalScreen
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -65,17 +67,35 @@ fun AppNavHost(
         }
         
         composable(Routes.RECOMMENDATION_SCREEN) {
+            val viewModel = hiltViewModel<com.example.rumahaman.presentation.recommendation.RecommendationViewModel>(it)
             RecommendationScreen(
-                onBackClick = { navController.popBackStack() },
+                onBackClick = { 
+                    android.util.Log.d("NavGraph", "Recommendation screen back clicked - navigating to Dashboard")
+                    navController.popBackStack(Routes.DASHBOARD, inclusive = false)
+                },
                 onNavigateToResult = { 
+                    android.util.Log.d("NavGraph", "Navigating to RECOMMENDATION_RESULT_SCREEN")
                     navController.navigate(Routes.RECOMMENDATION_RESULT_SCREEN)
-                }
+                },
+                viewModel = viewModel
             )
         }
         
         composable(Routes.RECOMMENDATION_RESULT_SCREEN) {
+            android.util.Log.d("NavGraph", "RecommendationResultScreen composable created")
+            // Get the same ViewModel instance from the parent entry
+            val parentEntry = remember(it) {
+                navController.getBackStackEntry(Routes.RECOMMENDATION_SCREEN)
+            }
+            val viewModel = hiltViewModel<com.example.rumahaman.presentation.recommendation.RecommendationViewModel>(parentEntry)
+            
             RecommendationResultScreen(
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { 
+                    android.util.Log.d("NavGraph", "Result screen back clicked - navigating to Dashboard")
+                    // Jangan clear di sini, biar Dashboard yang clear saat user buka form lagi
+                    navController.popBackStack(Routes.DASHBOARD, inclusive = false)
+                },
+                viewModel = viewModel
             )
         }
         

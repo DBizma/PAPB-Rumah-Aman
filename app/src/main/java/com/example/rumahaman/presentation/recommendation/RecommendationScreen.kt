@@ -48,9 +48,17 @@ fun RecommendationScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     
+    // Clear recommendation when screen first opens
+    LaunchedEffect(Unit) {
+        android.util.Log.d("RecommendationScreen", "Screen opened - clearing previous recommendation")
+        viewModel.clearRecommendation()
+    }
+    
     // Navigate to result when recommendation is loaded
     LaunchedEffect(uiState.recommendation) {
+        android.util.Log.d("RecommendationScreen", "LaunchedEffect triggered - recommendation: ${uiState.recommendation?.service?.name}")
         if (uiState.recommendation != null) {
+            android.util.Log.d("RecommendationScreen", "Navigating to result screen...")
             onNavigateToResult()
         }
     }
