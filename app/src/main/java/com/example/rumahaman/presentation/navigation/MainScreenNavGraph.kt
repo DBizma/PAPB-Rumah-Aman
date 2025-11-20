@@ -29,9 +29,7 @@ fun MainScreenNavGraph(
             NotificationScreen(navController = navController)
         }
         composable(Routes.SETTINGS_SCREEN) {
-            // --- PERUBAHAN DI SINI ---
-            // Pass rootNavController agar PengaturanScreen bisa navigate ke SPLASH
-            PengaturanScreen(navController = rootNavController)
+            PengaturanScreen(navController = navController)
         }
     }
 }

@@ -77,7 +77,10 @@ fun PengaturanScreen(
             TopAppBar(
                 title = { Text("Pengaturan", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { 
+                        // Pop back ke Dashboard, bukan hanya satu langkah
+                        navController.popBackStack(Routes.DASHBOARD, inclusive = false)
+                    }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
                     }
                 },
