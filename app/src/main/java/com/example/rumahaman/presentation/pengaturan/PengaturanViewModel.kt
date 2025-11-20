@@ -60,20 +60,24 @@ class PengaturanViewModel @Inject constructor(
                         )
                     }
                     is Result.Error -> {
-                        // Jika error karena document tidak ada atau permission denied, buat document baru
+                        // Jika error karena document tidak ada, buat document baru
                         val errorMessage = result.exception.message?.lowercase() ?: ""
+                        android.util.Log.d("PengaturanViewModel", "Error loading user: $errorMessage")
+                        
                         if (errorMessage.contains("not found") || 
-                            errorMessage.contains("permission") ||
-                            errorMessage.contains("tidak ditemukan")) {
+                            errorMessage.contains("tidak ditemukan") ||
+                            errorMessage.contains("user tidak ditemukan") ||
+                            errorMessage.contains("no document")) {
+                            android.util.Log.d("PengaturanViewModel", "Creating new user document")
                             createUserDocument(
                                 currentUser.uid, 
                                 currentUser.email ?: "",
-                                currentUser.displayName ?: ""
+                                currentUser.displayName ?: "User"
                             )
                         } else {
                             _uiState.value = _uiState.value.copy(
                                 isLoading = false,
-                                error = result.exception.message ?: "Terjadi kesalahan"
+                                error = "Gagal memuat data: ${result.exception.message}"
                             )
                         }
                     }
@@ -94,16 +98,24 @@ class PengaturanViewModel @Inject constructor(
                 province = ""
             )
 
-            saveUserDataUseCase(newUser).collect { result ->
+            android.util.Log.d("PengaturanViewModel", "Saving new user: $newUser")
+            
+            saveUserDataUseCase(newUser, isNewUser = true).collect { result ->
                 when (result) {
                     is Result.Loading -> {
                         _uiState.value = _uiState.value.copy(isLoading = true)
                     }
                     is Result.Success -> {
-                        // Setelah berhasil create, load ulang data
-                        loadUserData()
+                        android.util.Log.d("PengaturanViewModel", "User created successfully")
+                        // Setelah berhasil create, set user langsung
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            user = newUser,
+                            error = null
+                        )
                     }
                     is Result.Error -> {
+                        android.util.Log.e("PengaturanViewModel", "Failed to create user: ${result.exception.message}")
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
                             error = "Gagal membuat data user: ${result.exception.message}"

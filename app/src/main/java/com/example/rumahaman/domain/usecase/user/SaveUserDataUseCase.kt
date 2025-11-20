@@ -9,7 +9,11 @@ import javax.inject.Inject
 class SaveUserDataUseCase @Inject constructor(
     private val userRepository: UserRepository
 ) {
-    suspend operator fun invoke(user: User): Flow<Result<Unit>> {
-        return userRepository.updateUserData(user)
+    suspend operator fun invoke(user: User, isNewUser: Boolean = false): Flow<Result<Unit>> {
+        return if (isNewUser) {
+            userRepository.createUserData(user)
+        } else {
+            userRepository.updateUserData(user)
+        }
     }
 }

@@ -66,4 +66,20 @@ class UserRepositoryImpl @Inject constructor(
         
         awaitClose { channel.close() }
     }
+    
+    override suspend fun createUserData(user: User): Flow<Result<Unit>> = callbackFlow {
+        trySend(Result.Loading)
+        
+        firestore.collection("users")
+            .document(user.id)
+            .set(user.toDto())
+            .addOnSuccessListener {
+                trySend(Result.Success(Unit))
+            }
+            .addOnFailureListener { exception ->
+                trySend(Result.Error(exception))
+            }
+        
+        awaitClose { channel.close() }
+    }
 }
