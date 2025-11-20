@@ -36,18 +36,46 @@ fun EditProfileScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    var showSuccessDialog by remember { mutableStateOf(false) }
 
-    LaunchedEffect(uiState.successMessage, uiState.error) {
+    LaunchedEffect(uiState.successMessage) {
         if (uiState.successMessage != null) {
-            snackbarHostState.showSnackbar(uiState.successMessage!!)
-            delay(2000)
-            viewModel.clearMessages()
-            navController.popBackStack()
+            showSuccessDialog = true
         }
+    }
+    
+    LaunchedEffect(uiState.error) {
         if (uiState.error != null) {
             snackbarHostState.showSnackbar(uiState.error!!)
             viewModel.clearMessages()
         }
+    }
+    
+    // Success Dialog
+    if (showSuccessDialog) {
+        AlertDialog(
+            onDismissRequest = { },
+            title = { 
+                Text(
+                    "Berhasil!",
+                    fontWeight = FontWeight.Bold
+                ) 
+            },
+            text = { 
+                Text("Profil berhasil diperbarui") 
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showSuccessDialog = false
+                        viewModel.clearMessages()
+                        navController.popBackStack()
+                    }
+                ) {
+                    Text("OK", color = TealColor)
+                }
+            }
+        )
     }
 
     Scaffold(
