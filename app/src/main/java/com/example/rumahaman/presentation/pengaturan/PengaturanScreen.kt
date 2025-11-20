@@ -38,6 +38,7 @@ import com.example.rumahaman.presentation.ui.theme.RumahAmanTheme
 @Composable
 fun PengaturanScreen(
     navController: NavController,
+    rootNavController: NavController? = null,
     viewModel: PengaturanViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -53,7 +54,7 @@ fun PengaturanScreen(
                     onClick = {
                         viewModel.confirmLogout()
                         // Navigate ke SPLASH_SCREEN dan clear semua backstack
-                        navController.navigate(Routes.SPLASH_SCREEN) {
+                        (rootNavController ?: navController).navigate(Routes.SPLASH_SCREEN) {
                             popUpTo(0) {
                                 inclusive = true
                             }
@@ -130,7 +131,10 @@ fun PengaturanScreen(
                 uiState.user != null -> {
                     UserSettingsContent(
                         user = uiState.user!!,
-                        onLogoutClick = { viewModel.showLogoutDialog() }
+                        onLogoutClick = { viewModel.showLogoutDialog() },
+                        onEditProfileClick = { 
+                            (rootNavController ?: navController).navigate(Routes.EDIT_PROFILE_SCREEN) 
+                        }
                     )
                 }
             }
@@ -141,7 +145,8 @@ fun PengaturanScreen(
 @Composable
 fun UserSettingsContent(
     user: User,
-    onLogoutClick: () -> Unit
+    onLogoutClick: () -> Unit,
+    onEditProfileClick: () -> Unit
 ) {
     Card(
         shape = RoundedCornerShape(16.dp),
@@ -218,7 +223,7 @@ fun UserSettingsContent(
             MenuItem(
                 iconRes = R.drawable.profil,
                 text = "Edit Profil",
-                onClick = { /* TODO: Navigasi ke Edit Profil */ }
+                onClick = onEditProfileClick
             )
             MenuItem(
                 iconRes = R.drawable.password,

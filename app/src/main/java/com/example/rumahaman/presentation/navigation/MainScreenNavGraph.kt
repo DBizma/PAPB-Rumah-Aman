@@ -1,5 +1,7 @@
 package com.example.rumahaman.presentation.navigation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
@@ -11,6 +13,7 @@ import com.example.rumahaman.presentation.dashboard.DashboardScreen
 import com.example.rumahaman.presentation.notification.NotificationScreen
 import com.example.rumahaman.presentation.pengaturan.PengaturanScreen
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MainScreenNavGraph(
     navController: NavHostController,
@@ -29,7 +32,10 @@ fun MainScreenNavGraph(
             NotificationScreen(navController = navController)
         }
         composable(Routes.SETTINGS_SCREEN) {
-            PengaturanScreen(navController = navController)
+            PengaturanScreen(
+                navController = navController,
+                rootNavController = rootNavController
+            )
         }
     }
 }

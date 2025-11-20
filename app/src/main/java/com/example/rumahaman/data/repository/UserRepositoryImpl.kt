@@ -47,9 +47,16 @@ class UserRepositoryImpl @Inject constructor(
     override suspend fun updateUserData(user: User): Flow<Result<Unit>> = callbackFlow {
         trySend(Result.Loading)
         
+        val userDto = user.toDto()
+        val updates = hashMapOf<String, Any>(
+            "name" to userDto.name,
+            "phoneNumber" to userDto.phoneNumber,
+            "email" to userDto.email
+        )
+        
         firestore.collection("users")
             .document(user.id)
-            .set(user.toDto())
+            .update(updates)
             .addOnSuccessListener {
                 trySend(Result.Success(Unit))
             }

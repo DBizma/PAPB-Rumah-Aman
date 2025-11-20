@@ -13,6 +13,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.rumahaman.presentation.dashboard.DashboardScreen
 import com.example.rumahaman.presentation.halamanAwal.HalamanAwalScreen
 import com.example.rumahaman.presentation.chatbot.ChatBotScreen
+import com.example.rumahaman.presentation.editProfile.EditProfileScreen
 import com.example.rumahaman.presentation.hasilrekomendasi.RecommendationResultScreen
 import com.example.rumahaman.presentation.login.LoginScreen
 import com.example.rumahaman.presentation.main.MainScreen
@@ -30,6 +31,7 @@ object Routes {
     const val SPLASH_SCREEN = "splashscreen"
     const val NOTIFICATION_SCREEN = "notification"
     const val SETTINGS_SCREEN = "settings"
+    const val EDIT_PROFILE_SCREEN = "edit_profile"
     const val CHATBOT_SCREEN = "chatbot"
     const val RECOMMENDATION_SCREEN = "recommendation"
     const val RECOMMENDATION_RESULT_SCREEN = "recommendation_result"
@@ -64,6 +66,10 @@ fun AppNavHost(
         
         composable(Routes.CHATBOT_SCREEN) {
             ChatBotScreen(navController = navController)
+        }
+        
+        composable(Routes.EDIT_PROFILE_SCREEN) {
+            EditProfileScreen(navController = navController)
         }
         
         composable(Routes.RECOMMENDATION_SCREEN) {
