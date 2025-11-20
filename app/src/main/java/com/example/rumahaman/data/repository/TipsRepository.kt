@@ -68,40 +68,20 @@ class TipsRepository @Inject constructor(
         awaitClose { listener.remove() }
     }
     
-    // Fungsi untuk mendapatkan 2 tips populer (berdasarkan viewCount tertinggi)
-    // Jika kurang dari 2, ambil tips terbaru
-    suspend fun getPopularTips(): kotlin.Result<List<NotificationItem.Tip>> {
-        return try {
-            // Query tips dengan viewCount tertinggi
-            val popularQuery = firestore.collection("tips")
-                .orderBy("viewCount", Query.Direction.DESCENDING)
-                .limit(2)
-                .get()
-                .await()
-            
-            var tipsList = popularQuery.documents.mapNotNull { doc ->
-                val tipData = doc.toObject(TipFirestore::class.java)
-                tipData?.let {
-                    NotificationItem.Tip(
-                        id = doc.id,
-                        title = it.title,
-                        description = it.description,
-                        link = it.link,
-                        createdAt = it.createdAt,
-                        viewCount = it.viewCount
-                    )
+    // Real-time Flow untuk mendapatkan 2 tips populer
+    fun getPopularTipsStream(): Flow<List<NotificationItem.Tip>> = callbackFlow {
+        val listener = firestore.collection("tips")
+            .orderBy("viewCount", Query.Direction.DESCENDING)
+            .limit(2)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    android.util.Log.e("TipsRepository", "Error listening to popular tips", error)
+                    return@addSnapshotListener
                 }
-            }
-            
-            // Jika kurang dari 2, ambil tips terbaru untuk melengkapi
-            if (tipsList.size < 2) {
-                val recentQuery = firestore.collection("tips")
-                    .orderBy("createdAt", Query.Direction.DESCENDING)
-                    .limit(2)
-                    .get()
-                    .await()
-                
-                val recentTips = recentQuery.documents.mapNotNull { doc ->
+
+                if (snapshot == null) return@addSnapshotListener
+
+                var tipsList = snapshot.documents.mapNotNull { doc ->
                     val tipData = doc.toObject(TipFirestore::class.java)
                     tipData?.let {
                         NotificationItem.Tip(
@@ -114,18 +94,41 @@ class TipsRepository @Inject constructor(
                         )
                     }
                 }
-                
-                // Gabungkan dan remove duplicate berdasarkan id
-                tipsList = (tipsList + recentTips)
-                    .distinctBy { it.id }
-                    .take(2)
+
+                // Jika kurang dari 2, ambil tips terbaru untuk melengkapi
+                if (tipsList.size < 2) {
+                    firestore.collection("tips")
+                        .orderBy("createdAt", Query.Direction.DESCENDING)
+                        .limit(2)
+                        .get()
+                        .addOnSuccessListener { recentSnapshot ->
+                            val recentTips = recentSnapshot.documents.mapNotNull { doc ->
+                                val tipData = doc.toObject(TipFirestore::class.java)
+                                tipData?.let {
+                                    NotificationItem.Tip(
+                                        id = doc.id,
+                                        title = it.title,
+                                        description = it.description,
+                                        link = it.link,
+                                        createdAt = it.createdAt,
+                                        viewCount = it.viewCount
+                                    )
+                                }
+                            }
+                            
+                            // Gabungkan dan remove duplicate
+                            tipsList = (tipsList + recentTips)
+                                .distinctBy { it.id }
+                                .take(2)
+                            
+                            trySend(tipsList)
+                        }
+                } else {
+                    trySend(tipsList)
+                }
             }
-            
-            kotlin.Result.success(tipsList)
-        } catch (e: Exception) {
-            android.util.Log.e("TipsRepository", "Error getting popular tips", e)
-            kotlin.Result.failure(e)
-        }
+
+        awaitClose { listener.remove() }
     }
     
     // Fungsi untuk increment view count

@@ -14,7 +14,6 @@ import javax.inject.Inject
 
 data class DashboardUiState(
     val popularTips: List<NotificationItem.Tip> = emptyList(),
-    val isLoading: Boolean = false,
     val error: String? = null
 )
 
@@ -27,27 +26,14 @@ class DashboardViewModel @Inject constructor(
     val uiState: StateFlow<DashboardUiState> = _uiState.asStateFlow()
 
     init {
-        loadPopularTips()
-    }
-
-    fun loadPopularTips() {
+        // Listen to real-time updates
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
-            
-            tipsRepository.getPopularTips()
-                .onSuccess { tips ->
+            tipsRepository.getPopularTipsStream()
+                .collect { tips ->
                     _uiState.update {
                         it.copy(
                             popularTips = tips,
-                            isLoading = false
-                        )
-                    }
-                }
-                .onFailure { exception ->
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            error = exception.message
+                            error = null
                         )
                     }
                 }
@@ -57,8 +43,7 @@ class DashboardViewModel @Inject constructor(
     fun onTipClicked(tipId: String) {
         viewModelScope.launch {
             tipsRepository.incrementTipViewCount(tipId)
-            // Reload tips to update counter
-            loadPopularTips()
+            // No need to reload, real-time listener will update automatically
         }
     }
 }

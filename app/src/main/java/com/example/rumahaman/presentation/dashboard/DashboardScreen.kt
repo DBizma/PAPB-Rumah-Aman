@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -240,49 +242,20 @@ fun DashboardScreen(
                 )
             }
             
-            // Loading state
-            if (uiState.isLoading) {
-                Box(
+            // Show skeleton or content
+            if (uiState.popularTips.isEmpty()) {
+                // Skeleton loader
+                Column (
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxWidth(),
-                    contentAlignment = Alignment.Center
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    CircularProgressIndicator(color = Color(0xFF2E7D84))
+                    repeat(2) {
+                        SkeletonTipCard()
+                    }
                 }
-            }
-            // Error state
-            else if (uiState.error != null) {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Gagal memuat tips",
-                        color = Color.Gray,
-                        fontSize = 14.sp
-                    )
-                }
-            }
-            // Empty state
-            else if (uiState.popularTips.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Belum ada tips tersedia",
-                        color = Color.Gray,
-                        fontSize = 14.sp
-                    )
-                }
-            }
-            // Content
-            else {
+            } else {
                 Column (
                     modifier = Modifier
                         .weight(1f)
@@ -301,6 +274,80 @@ fun DashboardScreen(
                 }
             }
 
+        }
+    }
+}
+
+@Composable
+fun SkeletonTipCard() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(140.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color(0xFFF0F5F4))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // Skeleton image
+            Box(
+                modifier = Modifier
+                    .weight(0.4f)
+                    .fillMaxHeight()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFFE0E0E0))
+            )
+            
+            // Skeleton content
+            Column(
+                modifier = Modifier
+                    .weight(0.6f)
+                    .fillMaxHeight(),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    // Skeleton title
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.9f)
+                            .height(16.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(Color(0xFFE0E0E0))
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.7f)
+                            .height(16.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(Color(0xFFE0E0E0))
+                    )
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    // Skeleton counter
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.5f)
+                            .height(14.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(Color(0xFFE0E0E0))
+                    )
+                }
+                
+                // Skeleton button
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.4f)
+                        .height(36.dp)
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(Color(0xFFE0E0E0))
+                )
+            }
         }
     }
 }
