@@ -33,7 +33,8 @@ fun TextFieldAuth(
     isValid: Boolean?,
     isPassword: Boolean = false,
     // 1. Tambahkan parameter baru untuk mengontrol ikon mata
-    showPasswordToggle: Boolean = false
+    showPasswordToggle: Boolean = false,
+    backgroundColor: Color = LightGreenGray
 ) {
     // State untuk mengontrol visibilitas password, hanya relevan jika isPassword true
     var isPasswordVisible by remember { mutableStateOf(false) }
@@ -51,9 +52,9 @@ fun TextFieldAuth(
             keyboardType = if (isPassword) KeyboardType.Password else KeyboardType.Text
         ),
         colors = TextFieldDefaults.colors(
-            focusedContainerColor = LightGreenGray,
-            unfocusedContainerColor = LightGreenGray,
-            disabledContainerColor = LightGreenGray,
+            focusedContainerColor = backgroundColor,
+            unfocusedContainerColor = backgroundColor,
+            disabledContainerColor = backgroundColor,
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
             cursorColor = TealColor

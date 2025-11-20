@@ -139,6 +139,9 @@ fun PengaturanScreen(
                         onLogoutClick = { viewModel.showLogoutDialog() },
                         onEditProfileClick = { 
                             (rootNavController ?: navController).navigate(Routes.EDIT_PROFILE_SCREEN) 
+                        },
+                        onEditPasswordClick = {
+                            (rootNavController ?: navController).navigate(Routes.EDIT_PASSWORD_SCREEN)
                         }
                     )
                 }
@@ -151,7 +154,8 @@ fun PengaturanScreen(
 fun UserSettingsContent(
     user: User,
     onLogoutClick: () -> Unit,
-    onEditProfileClick: () -> Unit
+    onEditProfileClick: () -> Unit,
+    onEditPasswordClick: () -> Unit
 ) {
     Card(
         shape = RoundedCornerShape(16.dp),
@@ -233,7 +237,7 @@ fun UserSettingsContent(
             MenuItem(
                 iconRes = R.drawable.password,
                 text = "Ubah password",
-                onClick = { /* TODO: Navigasi ke Ubah Password */ }
+                onClick = onEditPasswordClick
             )
             MenuItem(
                 iconRes = R.drawable.keluar,
