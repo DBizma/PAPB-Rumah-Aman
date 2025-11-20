@@ -42,6 +42,11 @@ fun PengaturanScreen(
     viewModel: PengaturanViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    
+    // Refresh data ketika screen muncul kembali (misalnya setelah edit profile)
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        viewModel.refreshUserData()
+    }
 
     // Dialog konfirmasi logout
     if (uiState.showLogoutDialog) {

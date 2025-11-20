@@ -55,9 +55,12 @@ fun DashboardScreen(
     navController: NavController,
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
-    // Ambil nama user dari Firebase Auth
-    val userName = FirebaseAuth.getInstance().currentUser?.displayName ?: "User"
     val uiState = viewModel.uiState.collectAsState().value
+    
+    // Refresh user name when screen appears
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        viewModel.refreshUserName()
+    }
     
     Column (
         modifier = Modifier.fillMaxSize().padding(24.dp),
@@ -98,7 +101,7 @@ fun DashboardScreen(
                         Row(
                             verticalAlignment = Alignment.CenterVertically // Agar teks dan ikon sejajar di tengah
                         ) {
-                            Text("Hi $userName, ", // Gunakan userName dari Firebase Auth
+                            Text("Hi ${uiState.userName}, ", // Gunakan userName dari ViewModel
                                 color = Color.White,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 18.sp
