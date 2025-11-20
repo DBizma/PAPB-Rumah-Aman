@@ -151,7 +151,7 @@ fun RecommendationScreen(
                 Column(
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    // Nama
+                    // Nama (read-only from user data)
                     Text(
                         text = "Nama:",
                         fontSize = 16.sp,
@@ -161,16 +161,16 @@ fun RecommendationScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
                         value = uiState.name,
-                        onValueChange = { viewModel.updateName(it) },
+                        onValueChange = { }, // Read-only
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(10.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            unfocusedContainerColor = FieldBackground,
-                            focusedContainerColor = FieldBackground,
-                            unfocusedBorderColor = Color.Transparent,
-                            focusedBorderColor = TealPrimary
+                            disabledContainerColor = FieldBackground,
+                            disabledBorderColor = Color.Transparent,
+                            disabledTextColor = Color.Black
                         ),
-                        placeholder = { Text("Masukkan nama Anda") }
+                        enabled = false, // Make it read-only
+                        placeholder = { Text("Nama akan diambil dari profil") }
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))

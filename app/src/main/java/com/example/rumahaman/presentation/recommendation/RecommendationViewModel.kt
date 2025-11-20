@@ -4,6 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.rumahaman.data.model.RecommendationResult
 import com.example.rumahaman.data.repository.RecommendationRepository
+import com.example.rumahaman.data.repository.Result
+import com.example.rumahaman.domain.repository.UserRepository
+import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,24 +19,54 @@ data class RecommendationUiState(
     val error: String? = null,
     val recommendation: RecommendationResult? = null,
     val name: String = "",
-    val gender: String = "Perempuan",
+    val gender: String = "",
     val age: String = "",
     val province: String = "",
-    val violenceType: String = "VERBAL",
-    val serviceType: String = "PSIKOLOGI"
+    val violenceType: String = "",
+    val serviceType: String = ""
 )
 
 @HiltViewModel
 class RecommendationViewModel @Inject constructor(
-    private val repository: RecommendationRepository
+    private val repository: RecommendationRepository,
+    private val userRepository: UserRepository,
+    private val auth: FirebaseAuth
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RecommendationUiState())
     val uiState: StateFlow<RecommendationUiState> = _uiState.asStateFlow()
-
-    fun updateName(name: String) {
-        _uiState.value = _uiState.value.copy(name = name)
+    
+    init {
+        loadUserData()
     }
+    
+    private fun loadUserData() {
+        val userId = auth.currentUser?.uid ?: return
+        
+        viewModelScope.launch {
+            userRepository.getUserData(userId).collect { result ->
+                when (result) {
+                    is Result.Success -> {
+                        val user = result.data
+                        _uiState.value = _uiState.value.copy(
+                            name = user.name,
+                            gender = user.gender,
+                            age = if (user.age > 0) user.age.toString() else "",
+                            province = user.province
+                        )
+                    }
+                    is Result.Error -> {
+                        // Keep default values if error
+                    }
+                    is Result.Loading -> {
+                        // Keep loading
+                    }
+                }
+            }
+        }
+    }
+    
+    // Remove updateName function - name is read-only from user data
 
     fun updateGender(gender: String) {
         _uiState.value = _uiState.value.copy(gender = gender)
