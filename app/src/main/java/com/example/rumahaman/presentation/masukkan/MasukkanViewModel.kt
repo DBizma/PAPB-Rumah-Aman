@@ -47,7 +47,7 @@ class MasukkanViewModel @Inject constructor(
             "timestamp" to System.currentTimeMillis()
         )
 
-        Firebase.firestore.collection("Masukkan")
+        Firebase.firestore.collection("masukkan")
             .add(MasukkanData)
             .addOnSuccessListener {
                 _uiState.update {
