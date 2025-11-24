@@ -16,8 +16,10 @@ import com.example.rumahaman.presentation.chatbot.ChatBotScreen
 import com.example.rumahaman.presentation.editPassword.EditPasswordScreen
 import com.example.rumahaman.presentation.editProfile.EditProfileScreen
 import com.example.rumahaman.presentation.hasilrekomendasi.RecommendationResultScreen
+import com.example.rumahaman.presentation.lapor.LaporScreen
 import com.example.rumahaman.presentation.login.LoginScreen
 import com.example.rumahaman.presentation.main.MainScreen
+import com.example.rumahaman.presentation.masukkan.MasukkanScreen
 import com.example.rumahaman.presentation.notification.NotificationScreen
 import com.example.rumahaman.presentation.recommendation.RecommendationScreen
 import com.example.rumahaman.presentation.register.RegisterScreen
@@ -34,6 +36,8 @@ object Routes {
     const val SETTINGS_SCREEN = "settings"
     const val EDIT_PROFILE_SCREEN = "edit_profile"
     const val EDIT_PASSWORD_SCREEN = "edit_password"
+    const val LAPOR_SCREEN = "lapor"
+    const val MASUKKAN_SCREEN = "masukkan"
     const val CHATBOT_SCREEN = "chatbot"
     const val RECOMMENDATION_SCREEN = "recommendation"
     const val RECOMMENDATION_RESULT_SCREEN = "recommendation_result"
@@ -77,7 +81,15 @@ fun AppNavHost(
         composable(Routes.EDIT_PASSWORD_SCREEN) {
             EditPasswordScreen(navController = navController)
         }
-        
+
+        composable(Routes.LAPOR_SCREEN) {
+            LaporScreen(navController = navController)
+        }
+
+        composable(Routes.MASUKKAN_SCREEN) {
+            MasukkanScreen(navController = navController)
+        }
+
         composable(Routes.RECOMMENDATION_SCREEN) {
             val viewModel = hiltViewModel<com.example.rumahaman.presentation.recommendation.RecommendationViewModel>(it)
             RecommendationScreen(

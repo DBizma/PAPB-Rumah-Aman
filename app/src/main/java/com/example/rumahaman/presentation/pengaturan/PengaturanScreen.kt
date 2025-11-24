@@ -142,6 +142,12 @@ fun PengaturanScreen(
                         },
                         onEditPasswordClick = {
                             (rootNavController ?: navController).navigate(Routes.EDIT_PASSWORD_SCREEN)
+                        },
+                        onLaporanClick = {
+                            (rootNavController ?: navController).navigate(Routes.LAPOR_SCREEN)
+                        },
+                        onMasukkanClick = {
+                            (rootNavController ?: navController).navigate(Routes.MASUKKAN_SCREEN)
                         }
                     )
                 }
@@ -155,7 +161,9 @@ fun UserSettingsContent(
     user: User,
     onLogoutClick: () -> Unit,
     onEditProfileClick: () -> Unit,
-    onEditPasswordClick: () -> Unit
+    onEditPasswordClick: () -> Unit,
+    onLaporanClick: () -> Unit,
+    onMasukkanClick: () -> Unit
 ) {
     Card(
         shape = RoundedCornerShape(16.dp),
@@ -258,12 +266,12 @@ fun UserSettingsContent(
             MenuItem(
                 iconRes = R.drawable.lapor,
                 text = "Laporkan",
-                onClick = { /* TODO: Navigasi ke Laporkan */ }
+                onClick = onLaporanClick
             )
             MenuItem(
                 iconRes = R.drawable.masukan,
                 text = "Kirim masukan",
-                onClick = { /* TODO: Navigasi ke Kirim Masukan */ }
+                onClick = onMasukkanClick
             )
             // Spacer di akhir untuk memberikan padding bawah
             Spacer(modifier = Modifier.height(8.dp))
