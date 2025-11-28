@@ -46,7 +46,8 @@ import java.util.Date
 @Composable
 fun NotificationCard(
     item: NotificationItem,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onWelcomeClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
 
@@ -78,6 +79,9 @@ fun NotificationCard(
                     println("Error opening link: ${e.message}") // Untuk logging di Logcat
                     showInvalidLinkDialog = true // Tampilkan dialog error
                 }
+            } else if (item is NotificationItem.Welcome) {
+                // Navigate to Settings when Welcome notification is clicked
+                onWelcomeClick()
             }
         }
     ) {

@@ -124,7 +124,13 @@ fun NotificationScreen(
 
                     // Tampilkan semua item notifikasi dalam grup tanggal ini
                     items(notifications, key = { it.id }) { notification ->
-                        NotificationCard(item = notification)
+                        NotificationCard(
+                            item = notification,
+                            onWelcomeClick = {
+                                // Navigate to Settings screen
+                                navController.navigate(com.example.rumahaman.navigation.Routes.SETTINGS_SCREEN)
+                            }
+                        )
                     }
                 }
             }
