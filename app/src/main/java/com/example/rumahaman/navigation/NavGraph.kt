@@ -18,6 +18,8 @@ import com.example.rumahaman.presentation.editProfile.EditProfileScreen
 import com.example.rumahaman.presentation.hasilrekomendasi.RecommendationResultScreen
 import com.example.rumahaman.presentation.lapor.LaporScreen
 import com.example.rumahaman.presentation.login.LoginScreen
+import com.example.rumahaman.presentation.lupaPassword.ForgotPasswordScreen
+import com.example.rumahaman.presentation.lupaPassword.OtpVerificationScreen
 import com.example.rumahaman.presentation.main.MainScreen
 import com.example.rumahaman.presentation.masukkan.MasukkanScreen
 import com.example.rumahaman.presentation.notification.NotificationScreen
@@ -32,6 +34,8 @@ object Routes {
     const val ONBOARDING = "onboarding"
     const val DASHBOARD = "dashboard"
     const val SPLASH_SCREEN = "splashscreen"
+    const val FORGOT_PASSWORD_SCREEN = "forgot_password"
+    const val OTP_VERIFICATION = "otp_verification"
     const val NOTIFICATION_SCREEN = "notification"
     const val SETTINGS_SCREEN = "settings"
     const val EDIT_PROFILE_SCREEN = "edit_profile"
@@ -69,7 +73,12 @@ fun AppNavHost(
         composable(Routes.SPLASH_SCREEN) {
             SplashScreen(navController = navController)
         }
-        
+        composable(Routes.FORGOT_PASSWORD_SCREEN) {
+            ForgotPasswordScreen(navController = navController)
+        }
+        composable(Routes.OTP_VERIFICATION) {
+            OtpVerificationScreen(navController = navController)
+        }
         composable(Routes.CHATBOT_SCREEN) {
             ChatBotScreen(navController = navController)
         }
