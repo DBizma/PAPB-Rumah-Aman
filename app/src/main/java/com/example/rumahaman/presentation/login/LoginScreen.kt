@@ -158,7 +158,9 @@ fun LoginScreen(
                             color = LinkColor,
                             fontWeight = FontWeight.SemiBold
                         ),
-                        onClick = { /* TODO: Navigasi ke halaman Lupa Password */ }
+                        onClick = {
+                            navController.navigate(Routes.FORGOT_PASSWORD_SCREEN)
+                        }
                     )
                 }
 
